@@ -79,6 +79,7 @@ def code_extract():
             if file not in template_files:
                 continue
 
+            # file = '4240100-门诊口腔科-门诊病历(初诊)-智齿阻生牙拔牙-门诊病历(初诊).html'
             file_path = '{}/{}'.format(path, file)
             print('开始处理<{}>：{}'.format(ind, file_path))
             raw_text = myUtils.html2text(file_path)
@@ -87,7 +88,7 @@ def code_extract():
             raw_texts = myUtils.get_blocks_by_type(raw_text)
 
             # 遍历各种史，提取信息
-            for type_name, text in raw_texts.items():
+            for type_name, text in raw_texts:
                 paragraph_display = ''  # 既往史：{鼻腔}。{鼻中隔}。{间接鼻咽镜检查}。
                 segments = []
                 # 粗分句，且针对特殊内容补全文本

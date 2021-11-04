@@ -7,7 +7,7 @@
 
 import regex
 
-import templateExtract.config as conf
+import config as conf
 
 
 def get_raw_text_extract_instance(type_name, text):

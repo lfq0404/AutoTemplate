@@ -4,6 +4,7 @@
 # @File    : config.py.py
 # @Software: Basebit
 # @Description:
+from zhon.hanzi import punctuation as zh_punc
 
 # 默认的词频，设置的比较高，尽量让自定义的词组识别出来
 DEFAULT_FREQUENCY = 99999999999999
@@ -60,6 +61,7 @@ JIEBA_USER_WORDS = [
     ['下肢', DEFAULT_FREQUENCY, 'n'],
     ['锌基封', DEFAULT_FREQUENCY, 'n'],
     ['暂封', DEFAULT_FREQUENCY, 'n'],
+    ['后突', DEFAULT_FREQUENCY, 'n'],
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['未冲管', DEFAULT_FREQUENCY * 10, 'n'],
     ['及时间', DEFAULT_FREQUENCY * 10, 'n'],
@@ -125,6 +127,7 @@ JIEBA_USER_WORDS = [
     ['两', DEFAULT_FREQUENCY, 'option'],
     ['中上', DEFAULT_FREQUENCY, 'option'],
     ['平软', DEFAULT_FREQUENCY, 'option'],
+    ['平', DEFAULT_FREQUENCY // 10, 'option'],
     ['紫绀', DEFAULT_FREQUENCY, 'option'],
     ['潮红', DEFAULT_FREQUENCY, 'option'],
     ['软', DEFAULT_FREQUENCY, 'option'],
@@ -139,6 +142,10 @@ JIEBA_USER_WORDS = [
     ['颈项部', DEFAULT_FREQUENCY, 'option'],
     ['广泛性', DEFAULT_FREQUENCY, 'option'],
     ['光泽', DEFAULT_FREQUENCY, 'option'],
+    ['好', DEFAULT_FREQUENCY, 'option'],
+    ['平伏', DEFAULT_FREQUENCY, 'option'],
+    ['反光可见', DEFAULT_FREQUENCY, 'option'],
+    ['有关节', DEFAULT_FREQUENCY, 'option'],
 ]
 
 # 词性为指定的text，且需要在display中保留的词
@@ -183,6 +190,7 @@ OPTION_MAP = {
     '粗': [['细', '粗'], 0],
     '中上': [['右上', '中上', '左上', '右下', '中下', '左下'], 1],
     '平软': [['平软', '僵硬'], 0],
+    '平': [['平', '不平'], 0],
     '紫绀': [['紫绀'], 0],
     '潮红': [['潮红'], 0],
     '软': [['软'], 0],
@@ -196,6 +204,10 @@ OPTION_MAP = {
     '颈项部': [['颈项部'], 1],
     '广泛性': [['广泛性'], 1],
     '光泽': [['光泽'], 0],
+    '好': [['好', '不好'], 0],
+    '平伏': [['平伏'], 0],
+    '反光可见': [['反光可见', '反光不可见'], 0],
+    '有关节': [['无关节', '有关节'], 0],
 }
 # 针对OPTION_MAP拆解的词，作用在display中会有特殊的展示
 SPECIAL_OPTION_DISPLAY = {
@@ -243,17 +255,12 @@ PRE_TREATMENT_CFG = [
         'repl': '：冲管/未冲管',
     },
     {
-        'pat': '冷（ ）／（\+\－），叩（ ），松（ ）',
+        'pat': '冷（.*）／（\+\－），叩（.*），松（.*）',
         'repl': '冷(+)，叩(+)，松(+)',
     },
     {
         'pat': '拔管过程 拔管过程 ',
         'repl': '拔管过程：拔管过程'
-    },
-    {
-        # 将xx,xx等，视为完整的一句话
-        'pat': '(?<=等[\u4e00-\u9fa5]*)(，)',
-        'repl': '。'
     },
     {
         'pat': '心率次/分',
@@ -326,12 +333,6 @@ PRE_TREATMENT_CFG = [
         'repl': '拔输入，'
     },
     {
-        # 高血压等关键词前面有特定标点符号，且后面没有跟“等”字，则自动添加“等”
-        # 有无糖尿病、脑梗塞、高血压 --> 有无糖尿病、脑梗塞、高血压等
-        'pat': '(?<=[、，](高血压|脑梗塞|糖尿病|哮喘病史))()(?<!等)$',
-        'repl': '等'
-    },
-    {
         # 糖尿病/高血压/下肢动脉硬化闭塞症/下肢血栓闭塞性脉管炎(与本疾病相关既往史) 后添加等
         'pat': '\(与本疾病相关既往史\)',
         'repl': '等'
@@ -362,9 +363,33 @@ PRE_TREATMENT_CFG = [
         'pat': '长期生活于原籍',
         'repl': '长期是否生活于原籍'
     },
+    {
+        # （+）后添加标点符号
+        'pat': '(（\+）|（\-）)(?![{}])'.format(zh_punc),
+        'repl': r'\1，'
+    },
 
 ]
+_ENUM_DISEASES = ['高血压', '脑梗塞', '糖尿病', '哮喘病', '心脏病']
+PRE_TREATMENT_CFG += [
+    {
+        # 高血压等关键词前面有特定标点符号，且后面没有跟“等”字，则自动添加“等”
+        # 有无糖尿病、脑梗塞、高血压 --> 有无糖尿病、脑梗塞、高血压等
+        # TODO：怎么把以下两个正则合并
+        'pat': '(?<=[、])({})(?![史、])(?!等)'.format('|'.join(_ENUM_DISEASES)),
+        'repl': r'\1等'
+    },
+    {
+        'pat': '(?<=[、])({}史)(?!等)'.format('史|'.join(_ENUM_DISEASES)),
+        'repl': r'\1等'
+    },
 
+    {
+        # 将xx,xx等，视为完整的一句话
+        'pat': '(?<=等[\u4e00-\u9fa5]*)(，)',
+        'repl': '。'
+    },
+]
 # 以下内容直接展示在display中
 DISPLAY_SENTENCE_TEXTS = [
     '末次月经',
@@ -381,6 +406,7 @@ DISPLAY_SENTENCE_TEXTS = [
     '深龋',
     '探诊疼痛',
     '2.今去龋，备洞，及穿髓点，置多聚甲醛失活剂',
+    '流行病学史',
 ]
 
 # 当遇到以下内容，需要临时调整jieba自定义词组

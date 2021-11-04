@@ -6,8 +6,8 @@
 # @Description:
 import re
 
-import templateExtract.constant as cons
-import templateExtract.config as conf
+import constant as cons
+import config as conf
 
 
 def get_sentence_extract_instance(sentence):

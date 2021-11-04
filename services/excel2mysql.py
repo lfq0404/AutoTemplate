@@ -127,7 +127,7 @@ def get_package_infos(template_files=None):
         label = line._3
         segment_content = line._4
         category_text = line._7
-        # template_category = cons.CATEFORY_MAP.get(category_text)
+        # template_category = cons.KNOWN_CATEGORY_MAP.get(category_text)
         if template_files and file_name not in template_files:
             continue
         if pandas.isna(segment_content):
@@ -268,7 +268,7 @@ def inert_into_mysql(package_infos, package_diseases_map, departments):
         custom_infos = []
 
         for category_text, template in package_info.items():
-            template_category = cons.CATEFORY_MAP.get(category_text) or 'CUSTOM'
+            template_category = cons.KNOWN_CATEGORY_MAP.get(category_text) or 'CUSTOM'
             if template_category == 'PRESENT':
                 # 现病史不需要创建segment
                 template_content = json.loads(template)

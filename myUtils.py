@@ -100,11 +100,11 @@ def html2text(html_file):
     return text
 
 
-def get_blocks_by_type(raw_text) -> dict:
+def get_blocks_by_type(raw_text) -> list:
     """
     将原始病例根据模块拆解
     :param raw_text:
-    :return: {'现病史': text, '个人史': text, ……}
+    :return: [['现病史', text], ['个人史', text]]
     """
     raw_text = raw_text.replace('\n{', '{')
     result = {}
@@ -114,7 +114,7 @@ def get_blocks_by_type(raw_text) -> dict:
 
     # '^(既往史|个人史|……)[:：]?([\s\S]*)'
     # patt = '^({})[:：]?([\s\S]*)'.format('|'.join(cons.TAKE_BLOCKS))
-    for block in blocks:
+    for ind, block in enumerate(blocks):
         # 某些文本满足“只要后面不是跟着 .*[:：] ，就继续匹配”的规则，但实际是不需要的，删除
         # 由于有断言，不能用自带的re模块
         block = regex.sub('|'.join(conf.ERROR_MATCH_TEXTS), '', block)
@@ -126,8 +126,34 @@ def get_blocks_by_type(raw_text) -> dict:
         temp = re.findall('^([\u4e00-\u9fa5]+)[:：]?([\s\S]*)', block)
         if temp and not re.search('(SPAN>|emr_reference)', temp[0][1]) and not re.search('(现病史|主诉)', temp[0][0]):
             temp = temp[0]
-            result[temp[0]] = temp[1]
+            result[(ind, temp[0])] = temp[1]
 
+    # 如果某些未知的分类夹杂在已知分类中，需要与上一个分类合并
+    # ----
+    # 个人史：
+    # 流行病学史：xxx
+    # 婚育史：
+    # ---
+    # 则需要把“流行病学史”放在“个人史”后
+    last_known_sign = False
+    del_keys = []
+    need_merge_keys = []
+    for key in sorted([i for i in result.keys()], key=lambda x: x[0], reverse=True):
+        _, category_name = key
+        if category_name in cons.KNOWN_CATEGORY_MAP:
+            last_known_sign = True
+        if last_known_sign and category_name not in cons.KNOWN_CATEGORY_MAP:
+            # 记录待合并的key
+            need_merge_keys.append(key)
+        if last_known_sign and category_name in cons.KNOWN_CATEGORY_MAP and need_merge_keys:
+            # 分类合并
+            for need_merge_key in need_merge_keys:
+                result[key] += '\n{}：{}'.format(need_merge_key[1], result[need_merge_key])
+            del_keys.extend(need_merge_keys)
+            need_merge_keys = []
+
+    result = {k: v for k, v in result.items() if k not in del_keys}
+    result = sorted([[k[1], v] for k,v in result.items()], key=lambda x: x[0])
     return result
 
 

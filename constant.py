@@ -17,8 +17,8 @@ MARRIAGEBIRTH_NAME = '婚育史'
 MENSTRUAL_NAME = '月经史'
 CUSTOM_NAME = '其他'
 
-# 有特定表映射的分类，不在该map中的，统一放在custom中
-CATEFORY_MAP = {
+# 已知的分类，不在该map中的，统一放在custom中
+KNOWN_CATEGORY_MAP = {
     PHYSICAL_NAME: 'PHYSICAL',
     PAST_NAME: 'PAST',
     FAMILY_NAME: 'FAMILY',
@@ -94,4 +94,4 @@ SHEET_NAME = '模板'
 HOST = 'localhost'
 USER = 'root'
 PASSWORD = 'a5300328'
-DB_NAME = '   smart_test'
+DB_NAME = 'aiwizard_test'

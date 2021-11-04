@@ -9,7 +9,7 @@ import re
 
 import pandas as pd
 import more_itertools as mit
-import templateExtract.constant as cons
+import constant as cons
 
 
 def record2excel(file_name, datas):

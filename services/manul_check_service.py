@@ -68,6 +68,8 @@ def check_segments(template_files=None):
                 print(lines_text, c)
             print('------------------')
             update = False
+
+            # 将所有的以right_lines为准
             right_lines = input('请输入正确的行号们（没有请直接回车）：')
             if right_lines:
                 for lines_text, _ in line_infos.items():
@@ -77,7 +79,9 @@ def check_segments(template_files=None):
                         datas.loc[n - 1][8] = line_infos[right_lines]
                 print('label = "{}"合并成功1'.format(label))
                 update = True
-            else:
+
+            # 将所有的以输入的为准
+            if not update:
                 right_content = input('请输入正确的内容（没有请直接回车）：')
                 if right_content:
                     for lines_text in line_infos:
@@ -85,6 +89,23 @@ def check_segments(template_files=None):
                             datas.loc[n - 1][8] = right_content
                     print('label = "{}"合并成功2'.format(label))
                     update = True
+
+            # 手动指定内容
+            if not update:
+                while True:
+                    lines_text = input('请输入需要修改的行号们（没有请直接回车）：')
+                    if not lines_text:
+                        break
+                    right_label = input('请输入正确的label：')
+                    right_content = input('请输入正确的content：')
+                    # if right_label or right_content:
+                    for n in json.loads(lines_text):
+                        if right_content:
+                            datas.loc[n - 1][8] = right_content
+                            update = True
+                        if right_label:
+                            datas.loc[n - 1][7] = right_label
+                            update = True
 
             if update:
                 datas.to_excel(cons.EXCEL_CHECK_FILE_PATH, sheet_name=cons.SHEET_NAME, index=False, header=False)
