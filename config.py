@@ -376,11 +376,11 @@ PRE_TREATMENT_CFG += [
         # 高血压等关键词前面有特定标点符号，且后面没有跟“等”字，则自动添加“等”
         # 有无糖尿病、脑梗塞、高血压 --> 有无糖尿病、脑梗塞、高血压等
         # TODO：怎么把以下两个正则合并
-        'pat': '(?<=[、])({})(?![史、])(?!等)'.format('|'.join(_ENUM_DISEASES)),
+        'pat': '(?<=、)({})(?![史、等])'.format('|'.join(_ENUM_DISEASES)),
         'repl': r'\1等'
     },
     {
-        'pat': '(?<=[、])({}史)(?!等)'.format('史|'.join(_ENUM_DISEASES)),
+        'pat': '(?<=、)({}史)(?![、等])'.format('史|'.join(_ENUM_DISEASES)),
         'repl': r'\1等'
     },
 
