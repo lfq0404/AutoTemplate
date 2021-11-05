@@ -5,9 +5,14 @@
 # @Software: Basebit
 # @Description:
 from zhon.hanzi import punctuation as zh_punc
+import constant as cons
 
 # 默认的词频，设置的比较高，尽量让自定义的词组识别出来
 DEFAULT_FREQUENCY = 99999999999999
+
+# 扩展选项。当option设定为该值时，需要扩展为TEXT，让用户填写
+EXTENSION_OPTIONS = 'EXTENSION_OPTIONS'
+
 # jieba自定义词组
 JIEBA_USER_WORDS = [
     ['手术史', DEFAULT_FREQUENCY, 'n'],
@@ -62,6 +67,8 @@ JIEBA_USER_WORDS = [
     ['锌基封', DEFAULT_FREQUENCY, 'n'],
     ['暂封', DEFAULT_FREQUENCY, 'n'],
     ['后突', DEFAULT_FREQUENCY, 'n'],
+    ['长期生活于', DEFAULT_FREQUENCY, 'n'],
+
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['未冲管', DEFAULT_FREQUENCY * 10, 'n'],
     ['及时间', DEFAULT_FREQUENCY * 10, 'n'],
@@ -84,8 +91,8 @@ JIEBA_USER_WORDS = [
     ['无明显症状按时复诊', DEFAULT_FREQUENCY * 10, 'n'],
     ['侧', DEFAULT_FREQUENCY * 10, 'n'],
 
-    ['[0]', DEFAULT_FREQUENCY, 'text'],
     ['时间', DEFAULT_FREQUENCY // 10, 'text'],
+    ['[0]', DEFAULT_FREQUENCY, 'text'],
     ['输入', DEFAULT_FREQUENCY, 'text'],
     ['请输入', DEFAULT_FREQUENCY, 'text'],
     ['编辑', DEFAULT_FREQUENCY, 'text'],
@@ -146,6 +153,7 @@ JIEBA_USER_WORDS = [
     ['平伏', DEFAULT_FREQUENCY, 'option'],
     ['反光可见', DEFAULT_FREQUENCY, 'option'],
     ['有关节', DEFAULT_FREQUENCY, 'option'],
+    ['原籍', DEFAULT_FREQUENCY, 'option'],
 ]
 
 # 词性为指定的text，且需要在display中保留的词
@@ -208,12 +216,98 @@ OPTION_MAP = {
     '平伏': [['平伏'], 0],
     '反光可见': [['反光可见', '反光不可见'], 0],
     '有关节': [['无关节', '有关节'], 0],
+    '原籍': [['原籍', EXTENSION_OPTIONS], 0],
 }
+
 # 针对OPTION_MAP拆解的词，作用在display中会有特殊的展示
 SPECIAL_OPTION_DISPLAY = {
     '是': '',  # 一般来讲，“是”会省略。是可见 --> 可见
     '否': '不',
 }
+
+# TODO：针对有无展示形式不同的结构考虑
+POSITIVE_EXTENSION_SEGMENTS = {
+    '烟': {
+        cons.KEY_LABEL: "烟",
+        cons.KEY_DISPLAY: "吸烟：时长{时长}年，频率{频率}支/天",
+        cons.KEY_PROPS: {
+            cons.KEY_COLOR: "red"
+        },
+        cons.KEY_ADDITION: [
+            {
+                cons.KEY_LABEL: '时长',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+            {
+                cons.KEY_LABEL: '频率',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+        ],
+        cons.KEY_VALUE: '1'
+    },
+    '酒': {
+        cons.KEY_LABEL: "酗酒",
+        cons.KEY_DISPLAY: "吸烟：时长{时长}年，酒量{酒量}ml/天",
+        cons.KEY_PROPS: {
+            cons.KEY_COLOR: "red"
+        },
+        cons.KEY_ADDITION: [
+            {
+                cons.KEY_LABEL: '时长',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+            {
+                cons.KEY_LABEL: '酒量',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+        ],
+        cons.KEY_VALUE: '2'
+    },
+    '婚': {
+        cons.KEY_LABEL: "已",
+        cons.KEY_DISPLAY: "吸烟：时长{时长}年，酒量{酒量}ml/天",
+        cons.KEY_PROPS: {
+            cons.KEY_COLOR: "red"
+        },
+        cons.KEY_ADDITION: [
+            {
+                cons.KEY_LABEL: '时长',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+            {
+                cons.KEY_LABEL: '酒量',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+        ],
+        cons.KEY_VALUE: '2'
+    },
+
+}
+
 # 选项的分割线。以下相隔的文本视为选项
 OPTION_SPLITS = ['/', '或']
 
@@ -361,7 +455,7 @@ PRE_TREATMENT_CFG = [
     },
     {
         'pat': '长期生活于原籍',
-        'repl': '长期是否生活于原籍'
+        'repl': '长期生活于原籍'
     },
     {
         # （+）后添加标点符号
@@ -416,7 +510,7 @@ SPECIAL_WORDS = [
 ]
 
 # 无穷枚举中可能出现的前缀词，将相关的词放在display中
-INFINITE_ENUM_FREFIX = ['服用']
+INFINITE_ENUM_FREFIX = ['服用', '长期生活于']
 
 # HTML转纯文本时的特殊替换
 HTML2TEXT_REPLACE = [

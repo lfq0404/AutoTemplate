@@ -73,9 +73,11 @@ KEY_PLACEHOLDER = 'placeholder'
 KEY_VALIDATION = 'validation'
 KEY_REGEX = 'regex'
 KEY_MESSAGE = 'message'
+
 # segment的各种value
-TYPE_TEXT = 'TEXT'
-TYPE_RADIO = 'RADIO'
+VALUE_TYPE_TEXT = 'TEXT'
+VALUE_TYPE_RADIO = 'RADIO'
+VALUE_CUSTOM_TEXT = '自定义文本'
 
 # 原始模板地址
 RAW_TEMPLATES_PATH = '/Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞金门急诊模板配置/rawTemplates'

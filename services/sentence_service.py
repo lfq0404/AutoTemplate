@@ -16,9 +16,13 @@ def get_sentence_extract_instance(sentence):
     :param sentence: 最小单元的一句话
     :return:
     """
-    if '等' in str(sentence) and '不良情绪' in str(sentence):
+    sentence_text = ''.join([i[0] for i in sentence])
+    if '等不良情绪' in sentence_text:
         return SentenceExtractBase(sentence)
-    elif '等' in str(sentence):
+    # TODO：后期结构调整，临时代码
+    elif ('等' in sentence_text and '烟' in sentence_text) or '婚' in sentence_text or '育' in sentence_text:
+        return HardCodeSentenceExtract(sentence)
+    elif '等' in sentence_text:
         return InfiniteEnumSentenceExtract(sentence)
     else:
         return SentenceExtractBase(sentence)
@@ -76,11 +80,11 @@ class SentenceExtractBase:
         :param last_op: 上一层级的option
         :return:
         """
-        if st[cons.KEY_TYPE] == cons.TYPE_TEXT:
+        if st[cons.KEY_TYPE] == cons.VALUE_TYPE_TEXT:
             if last_op:
                 last_op[cons.KEY_DISPLAY] += '{{{}}}'.format(st[cons.KEY_LABEL])
             return st
-        elif st[cons.KEY_TYPE] == cons.TYPE_RADIO:
+        elif st[cons.KEY_TYPE] == cons.VALUE_TYPE_RADIO:
             return self._get_option_segment(st, last_op)
 
     def _get_option_segment(self, st, last_op):
@@ -111,22 +115,40 @@ class SentenceExtractBase:
             option_temp = {
                 cons.KEY_LABEL: opt,
                 # 针对一些特殊的语法习俗，做特殊的处理
-                cons.KEY_DISPLAY: display.format(
-                    option=conf.SPECIAL_OPTION_DISPLAY.get(opt) if conf.SPECIAL_OPTION_DISPLAY.get(
-                        opt) is not None else opt),
+                cons.KEY_DISPLAY: display.format(option=conf.SPECIAL_OPTION_DISPLAY.get(opt) or opt),
                 cons.KEY_PROPS: {
                     cons.KEY_COLOR: color,
                 },
                 # 特殊：如果是阴阳，索引值从0开始；如果是枚举，则从1开始
                 cons.KEY_VALUE: str(ind + start_ind),
             }
+
+            # 在选项中再添加输入框
+            # todo: 后面临时添加的，代码结构可考虑优化
+            if opt == conf.EXTENSION_OPTIONS:
+                option_temp[cons.KEY_LABEL] = '其他'
+                option_temp[cons.KEY_DISPLAY] = option_temp[cons.KEY_DISPLAY].replace(
+                    conf.EXTENSION_OPTIONS,
+                    '{{{}}}'.format(cons.VALUE_CUSTOM_TEXT)
+                )
+                option_temp[cons.KEY_ADDITION] = [{
+                    cons.KEY_LABEL: cons.VALUE_CUSTOM_TEXT,
+                    cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                    cons.KEY_VALUE: '',
+                    cons.KEY_FREETEXTPREFIX: '',
+                    cons.KEY_FREETEXTPOSTFIX: '',
+                    cons.KEY_PLACEHOLDER: '',
+                }]
+
             if addition:
                 addition_res = []
                 for ad in addition:
                     addition_res.append(self._get_segment(ad, option_temp))
-                option_temp[cons.KEY_ADDITION] = addition_res
+                option_temp[cons.KEY_ADDITION] = option_temp[cons.KEY_ADDITION] + addition_res if option_temp.get(
+                    cons.KEY_ADDITION) else addition_res
             else:
-                option_temp[cons.KEY_ADDITION] = None
+                # 有则保留，否则为None
+                option_temp[cons.KEY_ADDITION] = option_temp.get(cons.KEY_ADDITION)
 
             options.append(option_temp)
 
@@ -181,7 +203,7 @@ class SentenceExtractBase:
             # option对应的segment
             if word[1] == cons.AG_OPTION:
                 # 如果存在选项，暂时写死为单选
-                st[cons.KEY_TYPE] = cons.TYPE_RADIO
+                st[cons.KEY_TYPE] = cons.VALUE_TYPE_RADIO
 
                 # 保证至少存在option后才有addition
                 if cons.OPTION_FORMAT in display_temp:
@@ -203,7 +225,7 @@ class SentenceExtractBase:
                     sentence.insert(0, word)
                     st[cons.KEY_ADDITION] = self._get_segment_levels(sentence)
                 else:
-                    st[cons.KEY_TYPE] = cons.TYPE_TEXT
+                    st[cons.KEY_TYPE] = cons.VALUE_TYPE_TEXT
                     display_temp += '{}{}'.format(word[0], cons.SPLIT_TEXT) \
                         if word[0] in conf.RETAIN_TEXTS else cons.SPLIT_TEXT
             elif word[1] == cons.AG_DISPLAY:
@@ -214,7 +236,7 @@ class SentenceExtractBase:
 
         # 对text类型特殊处理
         # 可能一句话要被拆分成多个segment。末次月经：[]年[]月[]日，需要拆分成3个。
-        if st.get(cons.KEY_TYPE) == cons.TYPE_TEXT:
+        if st.get(cons.KEY_TYPE) == cons.VALUE_TYPE_TEXT:
             segment_temps = self._get_text_segments(display_temp)
         # 对最后一轮数据的收尾
         else:
@@ -252,7 +274,7 @@ class SentenceExtractBase:
 
             return {
                 cons.KEY_LABEL: self._get_label_name(pre=pre, post=post, label=label),
-                cons.KEY_TYPE: cons.TYPE_TEXT,
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
                 cons.KEY_VALUE: '',
                 cons.KEY_FREETEXTPREFIX: pre,
                 cons.KEY_FREETEXTPOSTFIX: post,
@@ -335,6 +357,23 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
         }
 
         # "有" 对应的segment
+        segment2 = self._get_positive_segment(enums, action_text, suffix_text)
+
+        segment = {
+            cons.KEY_LABEL: '{}{}'.format(action_text, ''.join(enums)),
+            cons.KEY_TYPE: cons.VALUE_TYPE_RADIO,
+            cons.KEY_VALUE: ['0'],
+            cons.KEY_OPTIONS: [segment1] + segment2
+        }
+        display = '{{{}}}'.format(segment[cons.KEY_LABEL])
+
+        return [(segment, before_punctuation, after_punctuation, sentence_text, display)]
+
+    def _get_positive_segment(self, enums, action_text, suffix_text):
+        """
+        获取“有”的segment
+        """
+
         child_key = ''.join(enums)
         addtion = [{
             cons.KEY_LABEL: child_key,
@@ -352,13 +391,13 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
         }]
         addtion2 = {
             cons.KEY_LABEL: '其他',
-            cons.KEY_DISPLAY: '其他：{自定义文本}',
+            cons.KEY_DISPLAY: '其他：{{{}}}'.format(cons.VALUE_CUSTOM_TEXT),
             cons.KEY_PROPS: {
                 cons.KEY_COLOR: 'red',
             },
             cons.KEY_ADDITION: [{
-                cons.KEY_LABEL: '自定义文本',
-                cons.KEY_TYPE: cons.TYPE_TEXT,
+                cons.KEY_LABEL: cons.VALUE_CUSTOM_TEXT,
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
                 cons.KEY_VALUE: '',
                 cons.KEY_FREETEXTPREFIX: '',
                 cons.KEY_FREETEXTPOSTFIX: '',
@@ -372,7 +411,7 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
         }
         addtion[0][cons.KEY_OPTIONS].append(addtion2)
 
-        segment2 = {
+        segment2 = [{
             cons.KEY_LABEL: '有',
             cons.KEY_DISPLAY: '有{}{{{}}}{}'.format(action_text, child_key, suffix_text),
             cons.KEY_PROPS: {
@@ -380,13 +419,17 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
             },
             cons.KEY_ADDITION: addtion,
             cons.KEY_VALUE: '1',
-        }
-        segment = {
-            cons.KEY_LABEL: '{}{}'.format(action_text, ''.join(enums)),
-            cons.KEY_TYPE: cons.TYPE_RADIO,
-            cons.KEY_VALUE: ['0'],
-            cons.KEY_OPTIONS: [segment1, segment2]
-        }
-        display = '{{{}}}'.format(segment[cons.KEY_LABEL])
+        }]
 
-        return [(segment, before_punctuation, after_punctuation, sentence_text, display)]
+        return segment2
+
+
+class HardCodeSentenceExtract(InfiniteEnumSentenceExtract):
+    """
+    硬编码的类型
+    """
+    def _get_positive_segment(self, enums, action_text, suffix_text):
+        return [
+            conf.POSITIVE_EXTENSION_SEGMENTS['烟'],
+            conf.POSITIVE_EXTENSION_SEGMENTS['酒'],
+        ]
