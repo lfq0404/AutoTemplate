@@ -45,13 +45,13 @@ if __name__ == '__main__':
     # text = '门诊密切随访。非那雄胺*2盒，1粒QDPO；多沙唑嗪*2盒，1粒QNPO。入院手术，一月后复查泌尿彩超、尿流率、PSA，fPSA'
 
     # 粗分句，且针对特殊内容补全文本
-    blocks = get_raw_text_extract_instance(type_name, text).extract()
+    blocks = get_raw_text_extract_instance(type_name, text).extract_blocks()
     for block in blocks:
         # 精分句，拆分成具有完整语义的句子
-        sentences = get_block_extract_instance(block).extract()
+        sentences = get_block_extract_instance(block).extract_sentences()
         # 通过sentence获取segment
         for sentence in sentences:
-            sgmts = get_sentence_extract_instance(sentence).extract()
+            sgmts = get_sentence_extract_instance(sentence).extract_segments()
             # # 经过一系列处理，获取segments，及前后标点符号
             # sgmts = block_instance.get_segments(sentences)
             # 拼接segments

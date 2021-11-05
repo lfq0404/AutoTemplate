@@ -8,10 +8,11 @@ import json
 import pandas
 
 import constant as cons
+import config as conf
 from myUtils import read_excel
 
 
-def check_segments(template_files=None):
+def check_segments():
     """check_segments
     获取人工修改后的segments
     :return:
@@ -29,7 +30,7 @@ def check_segments(template_files=None):
         if pandas.isna(raw_content) or type(raw_content) is not str or '{' not in raw_content:
             continue
         # 只提取需要的文件
-        if template_files and line._1 not in template_files:
+        if conf.EXTRACT_TEMPLATE_FILES and line._1 not in conf.EXTRACT_TEMPLATE_FILES:
             continue
 
         raw_label = line._3

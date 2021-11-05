@@ -30,13 +30,10 @@ class RawTextExtractBase:
         self.type_name = type_name
         self.text = text
 
-    def extract(self):
+    def extract_blocks(self):
         """
-        解析的入口方法，每个子类若有特殊情况，可以重写
-        1、将原始段落，分成语句块block
-        2、将block分词，进一步拆分成语义独立的句子sentence
-        3、sentence继续拆分成多个segment
-        【单选复选、颜色、默认值……暂时不能自动识别】
+        粗断句
+        将原始文本，拆分成语句块
         :return:
         """
         # 针对一些特殊情况，修改源文本
@@ -87,4 +84,4 @@ if __name__ == '__main__':
     # text = 'HR88次/分，律齐。'
     # text = '1）皮肤科门诊或周一上午痤疮专病门诊随访 2）忌食辛辣刺激甜食3）保证睡眠避免熬夜 4）（建议）妇科门诊就诊排除多囊卵巢的可能。'
     text.replace(' ', '')
-    get_raw_text_extract_instance('个人史', text).extract()
+    get_raw_text_extract_instance('个人史', text).extract_blocks()

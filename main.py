@@ -13,52 +13,11 @@ from services.raw_text_service import get_raw_text_extract_instance
 from services.manul_check_service import check_segments
 from services.pandas2excel import record2excel
 import constant as cons
+import config as conf
 import services.excel2mysql as excel2mysql
 # 是否打印日志
 from services.block_service import get_block_extract_instance
 from services.sentence_service import get_sentence_extract_instance
-
-# 是否将代码的解析结果，写入到Excel中
-is_record = True
-template_files = ['4431000-急诊发热-门诊病历(初诊)模板-门诊病历(初诊).html',
-                  '4360127-九舍门诊眼科-门诊病历(复诊)-眼科(一般)-门诊病历(复诊).html',
-                  '4360127-九舍门诊眼科-门诊病历(配药)-眼科-门诊病历(配药).html',
-                  '0080600-护理专病门诊-PICC护理（常规护理）模板-门诊病历(配药).html',
-                  '4360117-九舍门诊普内科-通用-配药-门诊病历(配药).html',
-                  '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌辅助内分泌治疗-门诊病历(配药).html',
-                  '4121601-门诊乳腺中心-门诊病历(复诊)-乳房肿块-门诊病历(复诊).html',
-                  '4360117-九舍门诊普内科-通用-复诊-门诊病历(复诊).html',
-                  '4121601-门诊乳腺中心-门诊病历(复诊)-乳腺增生-门诊病历(复诊).html',
-                  '4350100-营养门诊-营养门诊病历(配药)-门诊病历(配药).html',
-                  '0080600-护理专病门诊-PORT护理（常规护理）模板-门诊病历(配药).html',
-                  '4121601-门诊乳腺中心-门诊病历(复诊)-乳腺癌术后-门诊病历(复诊).html',
-                  '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌辅助化疗-门诊病历(配药).html',
-                  '4200100-门诊产科-门诊病历(配药)简单-产科-门诊病历(配药).html',
-                  '4280000-门诊推拿科-门诊病历(初诊)-颈型颈椎病-门诊病历(初诊).html',
-                  '4121601-门诊乳腺中心-门诊病历(配药)-赫赛汀-门诊病历(配药).html',
-                  '4240100-门诊口腔科-门诊病历(初诊)-龋齿牙体缺损-门诊病历(初诊).html',
-                  '4270000-门诊针灸科-门诊病历(复诊)-腰痛-门诊病历(复诊).html',
-                  '0080600-护理专病门诊-PICC护理（拔管护理）模板-门诊病历(配药).html',
-                  '4270000-门诊针灸科-门诊病历(复诊)-颈椎病-门诊病历(复诊).html',
-                  '4121601-门诊乳腺中心-门诊病历(初诊)-乳腺增生-门诊病历(初诊).html',
-                  '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌新辅助化疗-门诊病历(配药).html',
-                  '1010200-广慈门诊-通用-复诊-门诊病历(复诊).html',
-                  '4300500-门诊疼痛-门诊病历(初诊)-无痛胃肠镜麻醉-门诊病历(初诊).html',
-                  '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌靶向+化疗-门诊病历(配药).html',
-                  '4270000-门诊针灸科-门诊病历(复诊)-肩关节痛-门诊病历(复诊).html',
-                  '4270000-门诊针灸科-门诊病历(复诊)-周围性面瘫-门诊病历(复诊).html',
-                  '4370500-特需门诊-门诊配药-特需内镜治疗-门诊病历(配药).html',
-                  '4240100-门诊口腔科-门诊病历(初诊)-洗牙-门诊病历(初诊).html',
-                  '4240100-门诊口腔科-门诊病历(初诊)-智齿阻生牙拔牙-门诊病历(初诊).html',
-                  '4280000-门诊推拿科-门诊病历(初诊)-腰肌筋膜炎-门诊病历(初诊).html',
-                  '4431000-急诊发热-门诊病历(复诊)模板-门诊病历(复诊).html',
-                  '4270000-门诊针灸科-门诊病历(复诊)-膝关节痛-门诊病历(复诊).html',
-                  '4280000-门诊推拿科-门诊病历(初诊)-腰椎间盘突出-门诊病历(初诊).html',
-                  '4280000-门诊推拿科-门诊病历(初诊)-椎动脉型颈椎病-门诊病历(初诊).html',
-                  '4121601-门诊乳腺中心-门诊病历(初诊)-乳房肿块-门诊病历(初诊).html',
-                  '4240100-门诊口腔科-门诊病历(初诊)-牙髓炎-门诊病历(初诊).html',
-                  '4280000-门诊推拿科-门诊病历(初诊)-神经根型颈椎病-门诊病历(初诊).html',
-                  ]
 
 
 def code_extract():
@@ -76,7 +35,7 @@ def code_extract():
                 print('文件名不满足要求，不处理<{}>：{}'.format(ind, file))
                 continue
 
-            if file not in template_files:
+            if file not in conf.EXTRACT_TEMPLATE_FILES:
                 continue
 
             # file = '4240100-门诊口腔科-门诊病历(初诊)-智齿阻生牙拔牙-门诊病历(初诊).html'
@@ -92,17 +51,15 @@ def code_extract():
                 paragraph_display = ''  # 既往史：{鼻腔}。{鼻中隔}。{间接鼻咽镜检查}。
                 segments = []
                 # 粗分句，且针对特殊内容补全文本
-                blocks = get_raw_text_extract_instance(type_name, text).extract()
+                blocks = get_raw_text_extract_instance(type_name, text).extract_blocks()
                 for block in blocks:
                     # 精分句，拆分成具有完整语义的句子
-                    sentences = get_block_extract_instance(block).extract()
-                    # 通过sentence获取segment
+                    sentences = get_block_extract_instance(block).extract_sentences()
                     for sentence in sentences:
-                        sgmts = get_sentence_extract_instance(sentence).extract()
-                        # # 经过一系列处理，获取segments，及前后标点符号
-                        # sgmts = block_instance.get_segments(sentences)
-                        # 拼接segments
+                        # 通过sentence获取segment，及前后标点符号
+                        sgmts = get_sentence_extract_instance(sentence).extract_segments()
                         for sgmt in sgmts:
+                            # 拼接segments
                             segment, before_punctuation, after_punctuation, sentence_text, display = sgmt
                             paragraph_display += '{}{}{}'.format(before_punctuation, display, after_punctuation)
                             if segment:
@@ -128,11 +85,14 @@ def main():
     # reload = 'y'
     if reload == 'y':
         datas = code_extract()
-        if is_record:
-            record2excel(cons.EXCEL_FILE_PATH, datas)
+        record2excel(cons.EXCEL_FILE_PATH, datas)
+    elif reload == 'n':
+        pass
+    else:
+        raise ValueError('请输入正确的指令')
 
-    check_segments(template_files)
-    excel2mysql.main(template_files)
+    check_segments()
+    excel2mysql.main()
 
 
 if __name__ == '__main__':

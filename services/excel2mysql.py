@@ -16,6 +16,7 @@ import pymysql
 import six
 
 import constant as cons
+import config as conf
 
 from myUtils import read_excel
 
@@ -72,7 +73,7 @@ def get_package_diseases_map():
     return package_diseases_map
 
 
-def get_package_infos(template_files=None):
+def get_package_infos():
     """
     获取完整的package信息
     :return:
@@ -128,7 +129,7 @@ def get_package_infos(template_files=None):
         segment_content = line._4
         category_text = line._7
         # template_category = cons.KNOWN_CATEGORY_MAP.get(category_text)
-        if template_files and file_name not in template_files:
+        if conf.EXTRACT_TEMPLATE_FILES and file_name not in conf.EXTRACT_TEMPLATE_FILES:
             continue
         if pandas.isna(segment_content):
             continue
@@ -146,7 +147,7 @@ def get_package_infos(template_files=None):
         package_infos[file_name][category_text]['segments'][label] = segment_content
 
     print('无效的文件为：')
-    for i in set(template_files) - valid_files:
+    for i in set(conf.EXTRACT_TEMPLATE_FILES) - valid_files:
         print(i)
 
     # 附加现病史的内容
@@ -157,7 +158,7 @@ def get_package_infos(template_files=None):
         feature = line._3
         package_info = package_infos.get(file_name)
         if not package_info:
-            if file_name in template_files:
+            if file_name in conf.EXTRACT_TEMPLATE_FILES:
                 package_infos[file_name] = {}
             else:
                 continue
@@ -520,7 +521,7 @@ def record_delete_log():
             f.write(';\n')
 
 
-def main(template_files):
+def main():
     """
     前提：人工判读完成 get_update_segments 不报错
 
@@ -533,7 +534,7 @@ def main(template_files):
     # 初始化机构、部门数据
     departments = init_datas()
     # 获取package的完整数据
-    package_infos = get_package_infos(template_files=template_files)
+    package_infos = get_package_infos()
     # 获取package与disease的关系
     package_diseases_map = get_package_diseases_map()
     # 数据入库
@@ -543,44 +544,4 @@ def main(template_files):
 
 
 if __name__ == '__main__':
-    template_files = ['4431000-急诊发热-门诊病历(初诊)模板-门诊病历(初诊).html',
-                      '4360127-九舍门诊眼科-门诊病历(复诊)-眼科(一般)-门诊病历(复诊).html',
-                      '4360127-九舍门诊眼科-门诊病历(配药)-眼科-门诊病历(配药).html',
-                      '0080600-护理专病门诊-PICC护理（常规护理）模板-门诊病历(配药).html',
-                      '4360117-九舍门诊普内科-通用-配药-门诊病历(配药).html',
-                      '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌辅助内分泌治疗-门诊病历(配药).html',
-                      '4121601-门诊乳腺中心-门诊病历(复诊)-乳房肿块-门诊病历(复诊).html',
-                      '4360117-九舍门诊普内科-通用-复诊-门诊病历(复诊).html',
-                      '4121601-门诊乳腺中心-门诊病历(复诊)-乳腺增生-门诊病历(复诊).html',
-                      '4350100-营养门诊-营养门诊病历(配药)-门诊病历(配药).html',
-                      '0080600-护理专病门诊-PORT护理（常规护理）模板-门诊病历(配药).html',
-                      '4121601-门诊乳腺中心-门诊病历(复诊)-乳腺癌术后-门诊病历(复诊).html',
-                      '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌辅助化疗-门诊病历(配药).html',
-                      '4200100-门诊产科-门诊病历(配药)简单-产科-门诊病历(配药).html',
-                      '4280000-门诊推拿科-门诊病历(初诊)-颈型颈椎病-门诊病历(初诊).html',
-                      '4121601-门诊乳腺中心-门诊病历(配药)-赫赛汀-门诊病历(配药).html',
-                      '4240100-门诊口腔科-门诊病历(初诊)-龋齿牙体缺损-门诊病历(初诊).html',
-                      '4270000-门诊针灸科-门诊病历(复诊)-腰痛-门诊病历(复诊).html',
-                      '0080600-护理专病门诊-PICC护理（拔管护理）模板-门诊病历(配药).html',
-                      '4270000-门诊针灸科-门诊病历(复诊)-颈椎病-门诊病历(复诊).html',
-                      '4121601-门诊乳腺中心-门诊病历(初诊)-乳腺增生-门诊病历(初诊).html',
-                      '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌新辅助化疗-门诊病历(配药).html',
-                      '1010200-广慈门诊-通用-复诊-门诊病历(复诊).html',
-                      '4300500-门诊疼痛-门诊病历(初诊)-无痛胃肠镜麻醉-门诊病历(初诊).html',
-                      '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌靶向+化疗-门诊病历(配药).html',
-                      '4270000-门诊针灸科-门诊病历(复诊)-肩关节痛-门诊病历(复诊).html',
-                      '4270000-门诊针灸科-门诊病历(复诊)-周围性面瘫-门诊病历(复诊).html',
-                      '4370500-特需门诊-门诊配药-特需内镜治疗-门诊病历(配药).html',
-                      '4240100-门诊口腔科-门诊病历(初诊)-洗牙-门诊病历(初诊).html',
-                      '4240100-门诊口腔科-门诊病历(初诊)-智齿阻生牙拔牙-门诊病历(初诊).html',
-                      '4280000-门诊推拿科-门诊病历(初诊)-腰肌筋膜炎-门诊病历(初诊).html',
-                      '4431000-急诊发热-门诊病历(复诊)模板-门诊病历(复诊).html',
-                      '4270000-门诊针灸科-门诊病历(复诊)-膝关节痛-门诊病历(复诊).html',
-                      '4280000-门诊推拿科-门诊病历(初诊)-腰椎间盘突出-门诊病历(初诊).html',
-                      '4280000-门诊推拿科-门诊病历(初诊)-椎动脉型颈椎病-门诊病历(初诊).html',
-                      '4121601-门诊乳腺中心-门诊病历(初诊)-乳房肿块-门诊病历(初诊).html',
-                      '4240100-门诊口腔科-门诊病历(初诊)-牙髓炎-门诊病历(初诊).html',
-                      '4280000-门诊推拿科-门诊病历(初诊)-神经根型颈椎病-门诊病历(初诊).html',
-                      ]
-
-    main(template_files)
+    main()

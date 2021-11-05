@@ -35,7 +35,7 @@ class SentenceExtractBase:
         """
         self.sentence = sentence
 
-    def extract(self):
+    def extract_segments(self):
         """
         sentence解析入口
         :return: [(segment, before_punctuation, after_punctuation, sentence_text), ...]
@@ -289,7 +289,7 @@ class SentenceExtractBase:
 
 
 class InfiniteEnumSentenceExtract(SentenceExtractBase):
-    def extract(self):
+    def extract_segments(self):
         """
         获取无穷枚举类型的segment
         硬写代码

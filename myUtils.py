@@ -8,7 +8,6 @@ import re
 import pandas
 
 from regex import regex
-from urllib.request import urlopen
 from html.parser import HTMLParser
 from bs4 import BeautifulSoup
 
@@ -91,11 +90,9 @@ def html2text(html_file):
         soup = BeautifulSoup(text, 'html.parser')
         text = soup.text
 
-    # 特殊替换 todo
-    text = re.sub('有无\n', '有无', text)
-    text = re.sub('\n地点', '地点', text)
-    text = re.sub('\n四诊摘要', '四诊摘要', text)
-    text = re.sub('个人史：流行病学史：', '个人史：\n流行病学史：', text)
+    # 特殊替换
+    for i in conf.HTML2TEXT_REPLACE:
+        text = re.sub(i['pat'], i['repl'], text)
 
     return text
 
@@ -119,9 +116,6 @@ def get_blocks_by_type(raw_text) -> list:
         # 由于有断言，不能用自带的re模块
         block = regex.sub('|'.join(conf.ERROR_MATCH_TEXTS), '', block)
 
-        # 由于用BeautifulSoup将HTML转成文本，可能会存在多余的换行
-        # # 只要在一个段落中，默认不换行
-        # block = block.replace('\n', ' ')
         # 只获取需要的文本块
         temp = re.findall('^([\u4e00-\u9fa5]+)[:：]?([\s\S]*)', block)
         if temp and not re.search('(SPAN>|emr_reference)', temp[0][1]) and not re.search('(现病史|主诉)', temp[0][0]):
@@ -153,7 +147,7 @@ def get_blocks_by_type(raw_text) -> list:
             need_merge_keys = []
 
     result = {k: v for k, v in result.items() if k not in del_keys}
-    result = sorted([[k[1], v] for k,v in result.items()], key=lambda x: x[0])
+    result = sorted([[k[1], v] for k, v in result.items()], key=lambda x: x[0])
     return result
 
 
@@ -203,3 +197,17 @@ def department_statistics():
         result[department]['总数'] += 1
 
     print(result)
+
+
+def reverse_delete_sqls():
+    """
+    将SQL顺序反转打印
+    """
+    text = """delete from department where id = 4090100;
+delete from virtual_department where id = 209;
+delete from department_mapping where id = 505;
+"""
+    sqls = text.split(';')
+    for sql in sqls[::-1]:
+        if sql:
+            print(sql.replace('\n', ''), ';')

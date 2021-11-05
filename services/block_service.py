@@ -48,7 +48,7 @@ class BlockExtractBase:
     def __init__(self, block):
         self.block = block
 
-    def extract(self):
+    def extract_sentences(self):
         """
         block解析入口方法
         :return:
