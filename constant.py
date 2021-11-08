@@ -7,6 +7,9 @@
 from string import punctuation as cn_punc
 from zhon.hanzi import punctuation as zh_punc
 
+# 暂时不需要抓取的段落
+NOT_EXTRACT_PARAGRAPHS = '(现病史|主诉)'
+
 PRESENT_NAME = '现病史'
 PHYSICAL_NAME = '查体'
 PAST_NAME = '既往史'

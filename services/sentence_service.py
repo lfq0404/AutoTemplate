@@ -20,10 +20,12 @@ def get_sentence_extract_instance(sentence):
     if '等不良情绪' in sentence_text:
         return SentenceExtractBase(sentence)
     # TODO：后期结构调整，临时代码
-    elif ('等' in sentence_text and '烟' in sentence_text) or '婚' in sentence_text or '育' in sentence_text:
+    elif '烟、酒' in sentence_text:
         return HardCodeSentenceExtract(sentence)
     elif '等' in sentence_text:
         return InfiniteEnumSentenceExtract(sentence)
+    elif "'婚'" in str(sentence) or "'育'" in str(sentence):
+        return HardCodeSentenceExtract2(sentence)
     else:
         return SentenceExtractBase(sentence)
 
@@ -346,15 +348,7 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
             suffix_text = enum
 
         # "无" 对应的segment
-        segment1 = {
-            cons.KEY_LABEL: '无',
-            cons.KEY_DISPLAY: '无{}{}等{}'.format(action_text, '，'.join(enums), suffix_text),
-            cons.KEY_PROPS: {
-                cons.KEY_COLOR: 'green',
-            },
-            cons.KEY_ADDITION: None,
-            cons.KEY_VALUE: '0',
-        }
+        segment1 = self._get_negative_segment(enums, action_text, suffix_text)
 
         # "有" 对应的segment
         segment2 = self._get_positive_segment(enums, action_text, suffix_text)
@@ -368,6 +362,24 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
         display = '{{{}}}'.format(segment[cons.KEY_LABEL])
 
         return [(segment, before_punctuation, after_punctuation, sentence_text, display)]
+
+    def _get_negative_segment(self, enums, action_text, suffix_text):
+        """
+        获取“无”的segment
+        :param enums:
+        :param action_text:
+        :param suffix_text:
+        :return:
+        """
+        return {
+            cons.KEY_LABEL: '无',
+            cons.KEY_DISPLAY: '无{}{}等{}'.format(action_text, '，'.join(enums), suffix_text),
+            cons.KEY_PROPS: {
+                cons.KEY_COLOR: 'green',
+            },
+            cons.KEY_ADDITION: None,
+            cons.KEY_VALUE: '0',
+        }
 
     def _get_positive_segment(self, enums, action_text, suffix_text):
         """
@@ -426,10 +438,68 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
 
 class HardCodeSentenceExtract(InfiniteEnumSentenceExtract):
     """
-    硬编码的类型
+    烟酒硬编码的类型
     """
+
     def _get_positive_segment(self, enums, action_text, suffix_text):
-        return [
-            conf.POSITIVE_EXTENSION_SEGMENTS['烟'],
-            conf.POSITIVE_EXTENSION_SEGMENTS['酒'],
-        ]
+        if '酒' in enums and '烟' in enums:
+            return [
+                conf.POSITIVE_EXTENSION_SEGMENTS['烟'],
+                conf.POSITIVE_EXTENSION_SEGMENTS['酒'],
+            ]
+        elif '婚' in enums or '婚' in suffix_text:
+            return [
+                conf.POSITIVE_EXTENSION_SEGMENTS['婚']
+            ]
+        elif '育' in enums or '育' in suffix_text:
+            return [
+                conf.POSITIVE_EXTENSION_SEGMENTS['育']
+            ]
+        else:
+            print()
+
+
+class HardCodeSentenceExtract2(SentenceExtractBase):
+    def extract_segments(self):
+        """
+        瞎写的代码，后续重构
+        已婚已育的segment
+        硬写代码
+        :return:
+        """
+        word_sign = '婚' if '婚' in str(self.sentence) else '育'
+        # 供后续校验对比使用
+        sentence_text = ''.join([i[0] for i in self.sentence])
+
+        # 判断收尾的标点符号
+        if self.sentence[0][1] == 'x':
+            before_punctuation = self.sentence.pop(0)[0]
+        else:
+            before_punctuation = ''
+        if self.sentence[-1][1] == 'x':
+            after_punctuation = self.sentence.pop()[0]
+        else:
+            after_punctuation = ''
+
+        # "无" 对应的segment
+        segment1 = {
+            cons.KEY_LABEL: '未',
+            cons.KEY_DISPLAY: '未{}'.format(word_sign),
+            cons.KEY_PROPS: {
+                cons.KEY_COLOR: 'orange',
+            },
+            cons.KEY_ADDITION: None,
+            cons.KEY_VALUE: '0',
+        }
+        # "有" 对应的segment
+        segment2 = conf.POSITIVE_EXTENSION_SEGMENTS[word_sign]
+
+        segment = {
+            cons.KEY_LABEL: word_sign,
+            cons.KEY_TYPE: cons.VALUE_TYPE_RADIO,
+            cons.KEY_VALUE: ['0'],
+            cons.KEY_OPTIONS: [segment1, segment2]
+        }
+        display = '{{{}}}'.format(segment[cons.KEY_LABEL])
+
+        return [(segment, before_punctuation, after_punctuation, sentence_text, display)]

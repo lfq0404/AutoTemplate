@@ -70,6 +70,7 @@ JIEBA_USER_WORDS = [
     ['长期生活于', DEFAULT_FREQUENCY, 'n'],
 
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
+    ['港体及导管处皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['未冲管', DEFAULT_FREQUENCY * 10, 'n'],
     ['及时间', DEFAULT_FREQUENCY * 10, 'n'],
     ['发生时间', DEFAULT_FREQUENCY * 10, 'n'],
@@ -154,6 +155,9 @@ JIEBA_USER_WORDS = [
     ['反光可见', DEFAULT_FREQUENCY, 'option'],
     ['有关节', DEFAULT_FREQUENCY, 'option'],
     ['原籍', DEFAULT_FREQUENCY, 'option'],
+    ['骶棘', DEFAULT_FREQUENCY, 'option'],
+    ['条索样', DEFAULT_FREQUENCY, 'option'],
+    ['红肿', DEFAULT_FREQUENCY, 'option'],
 ]
 
 # 词性为指定的text，且需要在display中保留的词
@@ -217,6 +221,9 @@ OPTION_MAP = {
     '反光可见': [['反光可见', '反光不可见'], 0],
     '有关节': [['无关节', '有关节'], 0],
     '原籍': [['原籍', EXTENSION_OPTIONS], 0],
+    '骶棘': [['骶棘', EXTENSION_OPTIONS], 1],
+    '条索样': [['骶棘肌', EXTENSION_OPTIONS], 1],
+    '红肿': [['正常', '红肿'], 0],
 }
 
 # 针对OPTION_MAP拆解的词，作用在display中会有特殊的展示
@@ -281,13 +288,59 @@ POSITIVE_EXTENSION_SEGMENTS = {
     },
     '婚': {
         cons.KEY_LABEL: "已",
-        cons.KEY_DISPLAY: "吸烟：时长{时长}年，酒量{酒量}ml/天",
+        cons.KEY_DISPLAY: "已婚：{已婚情况}",
         cons.KEY_PROPS: {
-            cons.KEY_COLOR: "red"
+            cons.KEY_COLOR: "orange"
         },
         cons.KEY_ADDITION: [
             {
-                cons.KEY_LABEL: '时长',
+                cons.KEY_LABEL: "已婚情况",
+                cons.KEY_TYPE: cons.VALUE_TYPE_RADIO,
+                cons.KEY_VALUE: [
+                    "0"
+                ],
+                cons.KEY_OPTIONS: [
+                    {
+                        cons.KEY_LABEL: "配偶健",
+                        cons.KEY_DISPLAY: "配偶健",
+                        cons.KEY_PROPS: {
+                            cons.KEY_COLOR: "green"
+                        },
+                        cons.KEY_VALUE: "0",
+                        cons.KEY_ADDITION: None
+                    },
+                    {
+                        cons.KEY_LABEL: "配偶亡",
+                        cons.KEY_DISPLAY: "配偶亡",
+                        cons.KEY_PROPS: {
+                            cons.KEY_COLOR: "red"
+                        },
+                        cons.KEY_VALUE: "1",
+                        cons.KEY_ADDITION: None
+                    },
+                    {
+                        cons.KEY_LABEL: "配偶在不健",
+                        cons.KEY_DISPLAY: "配偶在不健",
+                        cons.KEY_PROPS: {
+                            cons.KEY_COLOR: "red"
+                        },
+                        cons.KEY_VALUE: "2",
+                        cons.KEY_ADDITION: None
+                    },
+                ]
+            }
+        ],
+        cons.KEY_VALUE: '2'
+    },
+    '育': {
+        cons.KEY_LABEL: "已",
+        cons.KEY_DISPLAY: "已育：足{足}，早{早}，流{流}，活{活}，子{子}，女{女}",
+        cons.KEY_PROPS: {
+            cons.KEY_COLOR: "orange"
+        },
+        cons.KEY_ADDITION: [
+            {
+                cons.KEY_LABEL: '足',
                 cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
                 cons.KEY_VALUE: '',
                 cons.KEY_FREETEXTPREFIX: '',
@@ -295,17 +348,49 @@ POSITIVE_EXTENSION_SEGMENTS = {
                 cons.KEY_PLACEHOLDER: '',
             },
             {
-                cons.KEY_LABEL: '酒量',
+                cons.KEY_LABEL: '早',
                 cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
                 cons.KEY_VALUE: '',
                 cons.KEY_FREETEXTPREFIX: '',
                 cons.KEY_FREETEXTPOSTFIX: '',
                 cons.KEY_PLACEHOLDER: '',
             },
+            {
+                cons.KEY_LABEL: '流',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+            {
+                cons.KEY_LABEL: '活',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+            {
+                cons.KEY_LABEL: '子',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+            {
+                cons.KEY_LABEL: '女',
+                cons.KEY_TYPE: cons.VALUE_TYPE_TEXT,
+                cons.KEY_VALUE: '',
+                cons.KEY_FREETEXTPREFIX: '',
+                cons.KEY_FREETEXTPOSTFIX: '',
+                cons.KEY_PLACEHOLDER: '',
+            },
+
         ],
         cons.KEY_VALUE: '2'
-    },
-
+    }
 }
 
 # 选项的分割线。以下相隔的文本视为选项
@@ -315,10 +400,12 @@ OPTION_SPLITS = ['/', '或']
 NOT_BROKEN_SENTENCE = ['°', ' ', '(', ')', '（', '）', '+', '-', '’', '：', ':'] + OPTION_SPLITS
 
 # 经常会匹配错的文本，需要删除
+# 某些文本满足“只要后面不是跟着 .*[:：] ，就继续匹配”的规则，但实际是不需要的，删除
 ERROR_MATCH_TEXTS = [
     '/输入', '/$', '^/',
     '(?<=^.*[:：])(/)',  # 删除紧跟着type_name的 / 。eg：'既往史：/(与本疾病相关既往史)' --> '既往史：(与本疾病相关既往史)'
-    '辅助检查', '检验：\s*[无]?\s*$',
+    '辅助检查',
+    '检验：\s*[无]?\s*$',
 ]
 
 # 文本预处理，将一些语句增删细节
@@ -353,7 +440,7 @@ PRE_TREATMENT_CFG = [
         'repl': '冷(+)，叩(+)，松(+)',
     },
     {
-        'pat': '拔管过程 拔管过程 ',
+        'pat': '拔管过程\s*拔管过程',
         'repl': '拔管过程：拔管过程'
     },
     {
@@ -433,9 +520,13 @@ PRE_TREATMENT_CFG = [
     },
 
     {
-        # 3、肝素封管：肝素封管 ，  --> 3、肝素封管：输入，
         'pat': '(?<=(穿刺点及周围皮肤情况|导管评估|肝素封管|更换接头|更换敷料|穿刺点及周围皮肤处理|拔管依据|拔管过程)：)([a-zA-Z\u4e00-\u9fa5 ]+)',
         'repl': '输入'
+    },
+    {
+        # 3、肝素封管：肝素封管 ，  --> 3、肝素封管：输入，
+        'pat': '港体及导管处皮肤情况\s*港体及导管处皮肤情况',
+        'repl': '港体及导管处皮肤情况：输入'
     },
     {
         # 导管通畅：导管通畅  --> 导管通畅：通畅/不通畅

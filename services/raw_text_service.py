@@ -10,25 +10,25 @@ import regex
 import config as conf
 
 
-def get_raw_text_extract_instance(type_name, text):
+def get_raw_text_extract_instance(type_name, paragraph_text):
     """
     根据raw_text，返回对应的解析实例
     :param type_name: 既往史、个人史……
-    :param text:
+    :param paragraph_text:
     :return:
     """
-    return RawTextExtractBase(type_name, text)
+    return RawTextExtractBase(type_name, paragraph_text)
 
 
 class RawTextExtractBase:
 
-    def __init__(self, type_name, text):
+    def __init__(self, type_name, paragraph_text):
         """
         :param type_name: 既往史、个人史……
-        :param text:
+        :param paragraph_text:
         """
         self.type_name = type_name
-        self.text = text
+        self.paragraph_text = paragraph_text
 
     def extract_blocks(self):
         """
@@ -37,22 +37,22 @@ class RawTextExtractBase:
         :return:
         """
         # 针对一些特殊情况，修改源文本
-        text = self._block_pre_treatment(self.text)
+        paragraph_text = self._block_pre_treatment(self.paragraph_text)
         # 默认以句号进行分句
-        blocks = self._get_blocks_by_text(text)
+        blocks = self._get_blocks_by_text(paragraph_text)
 
         blocks = [i for i in blocks if i.strip()]
 
         return blocks
 
-    def _get_blocks_by_text(self, text):
+    def _get_blocks_by_text(self, paragraph_text):
         """
         利用句号切分后，还需要保留句号，否则最终拼接不能还原，没办法直接用split
-        :param text:
+        :param paragraph_text:
         :return:
         """
         blocks = ['']
-        for i in text:
+        for i in paragraph_text:
             blocks[-1] += i
             if i in ['。', '\n']:
                 blocks.append('')
@@ -75,13 +75,3 @@ class RawTextExtractBase:
                 print('根据规则 “{}” ，将文本修改为：{}'.format(cfg['pat'], block))
 
         return block
-
-
-if __name__ == '__main__':
-    # 用于测试
-    text = '有无浅表淋巴结肿大，部位直径'
-    # text = '体温输入℃'
-    # text = 'HR88次/分，律齐。'
-    # text = '1）皮肤科门诊或周一上午痤疮专病门诊随访 2）忌食辛辣刺激甜食3）保证睡眠避免熬夜 4）（建议）妇科门诊就诊排除多囊卵巢的可能。'
-    text.replace(' ', '')
-    get_raw_text_extract_instance('个人史', text).extract_blocks()
