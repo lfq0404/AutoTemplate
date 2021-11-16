@@ -68,6 +68,10 @@ JIEBA_USER_WORDS = [
     ['暂封', DEFAULT_FREQUENCY, 'n'],
     ['后突', DEFAULT_FREQUENCY, 'n'],
     ['长期生活于', DEFAULT_FREQUENCY, 'n'],
+    ['瘀血证', DEFAULT_FREQUENCY, 'n'],
+    ['寒湿证', DEFAULT_FREQUENCY, 'n'],
+    ['肾虚证', DEFAULT_FREQUENCY, 'n'],
+    ['左下肢足靴区', DEFAULT_FREQUENCY, 'n'],
 
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['港体及导管处皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
@@ -130,7 +134,7 @@ JIEBA_USER_WORDS = [
     ['白腻', DEFAULT_FREQUENCY, 'option'],
     ['脉滑', DEFAULT_FREQUENCY, 'option'],
     ['可', DEFAULT_FREQUENCY, 'option'],
-    ['细', DEFAULT_FREQUENCY, 'option'],
+    ['弦细', DEFAULT_FREQUENCY, 'option'],
     ['粗', DEFAULT_FREQUENCY, 'option'],
     ['两', DEFAULT_FREQUENCY, 'option'],
     ['中上', DEFAULT_FREQUENCY, 'option'],
@@ -145,7 +149,6 @@ JIEBA_USER_WORDS = [
     ['轻度', DEFAULT_FREQUENCY, 'option'],
     ['脓性粘性水样血性干酪样', DEFAULT_FREQUENCY, 'option'],
     ['息肉样乳头状桑葚状菜花样', DEFAULT_FREQUENCY, 'option'],
-    ['减轻', DEFAULT_FREQUENCY, 'option'],
     ['清', DEFAULT_FREQUENCY, 'option'],
     ['颈项部', DEFAULT_FREQUENCY, 'option'],
     ['广泛性', DEFAULT_FREQUENCY, 'option'],
@@ -158,6 +161,10 @@ JIEBA_USER_WORDS = [
     ['骶棘', DEFAULT_FREQUENCY, 'option'],
     ['条索样', DEFAULT_FREQUENCY, 'option'],
     ['红肿', DEFAULT_FREQUENCY, 'option'],
+    ['压痛明显', DEFAULT_FREQUENCY, 'option'],
+    ['腋窝', DEFAULT_FREQUENCY, 'option'],
+    ['肱二头肌、肱三头肌', DEFAULT_FREQUENCY, 'option'],
+    ['合作', DEFAULT_FREQUENCY, 'option'],
 ]
 
 # 词性为指定的text，且需要在display中保留的词
@@ -191,15 +198,15 @@ OPTION_MAP = {
     '齐': [['齐', '不齐'], 0],
     '不齐': [['齐', '不齐'], 0],
     '升高': [['正常', '升高', '降低'], 0],
-    '未及': [['未及', '有'], 0],
+    '未及': [['未及', '可及'], 0],
     '阳阴性': [['阴性', '阳性'], 0],
     '淡红': [['淡红', '无淡红'], 0],
     '白腻': [['无白腻', '白腻'], 0],
     '脉滑': [['脉无滑', '脉滑'], 0],
     '可': [['可', '不可'], 0],
     '清': [['清', '不清'], 0],
-    '细': [['细', '粗'], 0],
-    '粗': [['细', '粗'], 0],
+    '弦细': [['弦细', '粗'], 0],
+    '粗': [['弦细', '粗'], 0],
     '中上': [['右上', '中上', '左上', '右下', '中下', '左下'], 1],
     '平软': [['平软', '僵硬'], 0],
     '平': [['平', '不平'], 0],
@@ -210,7 +217,6 @@ OPTION_MAP = {
     '桶状': [['桶状'], 1],
     '轻度': [['轻度', '重度'], 1],
     '一般': [['一般'], 1],
-    '减轻': [['减轻', '加重'], 1],
     '脓性粘性水样血性干酪样': [['脓性', '粘性', '水样', '血性', '干酪样'], 1],
     '息肉样乳头状桑葚状菜花样': [['息肉样', '乳头状', '桑葚状', '菜花样'], 1],
     '颈项部': [['颈项部'], 1],
@@ -222,8 +228,12 @@ OPTION_MAP = {
     '有关节': [['无关节', '有关节'], 0],
     '原籍': [['原籍', EXTENSION_OPTIONS], 0],
     '骶棘': [['骶棘', EXTENSION_OPTIONS], 1],
-    '条索样': [['骶棘肌', EXTENSION_OPTIONS], 1],
+    '条索样': [['条索样', EXTENSION_OPTIONS], 1],
     '红肿': [['正常', '红肿'], 0],
+    '压痛明显': [['压痛不明显', '压痛明显'], 0],
+    '腋窝': [['腋窝', '锁骨', '腋窝及锁骨'], 1],
+    '肱二头肌、肱三头肌': [['肱二头肌', '肱三头肌', '肱二头肌、肱三头肌'], 1],
+    '合作': [['合作', '不配合'], 0],
 }
 
 # 针对OPTION_MAP拆解的词，作用在display中会有特殊的展示
@@ -330,7 +340,7 @@ POSITIVE_EXTENSION_SEGMENTS = {
                 ]
             }
         ],
-        cons.KEY_VALUE: '2'
+        cons.KEY_VALUE: '1'
     },
     '育': {
         cons.KEY_LABEL: "已",
@@ -389,7 +399,7 @@ POSITIVE_EXTENSION_SEGMENTS = {
             },
 
         ],
-        cons.KEY_VALUE: '2'
+        cons.KEY_VALUE: '1'
     }
 }
 
@@ -434,6 +444,30 @@ PRE_TREATMENT_CFG = [
     {
         'pat': '：冲管',
         'repl': '：冲管/未冲管',
+    },
+    {
+        'pat': '压痛及反跳痛',
+        'repl': '压痛、反跳痛等',
+    },
+    {
+        'pat': '左/右下肢足靴区',
+        'repl': '左下肢足靴区/右下肢足靴区',
+    },
+    {
+        'pat': '腰\d到腰\d棘突旁',
+        'repl': '输入',
+    },
+    {
+        'pat': 'C\d-\d棘突及棘旁两侧',
+        'repl': '输入',
+    },
+    {
+        'pat': 'L\d棘突及棘旁',
+        'repl': '输入',
+    },
+    {
+        'pat': '神情',
+        'repl': '神清',
     },
     {
         'pat': '冷（.*）／（\+\－），叩（.*），松（.*）',
@@ -659,4 +693,12 @@ EXTRACT_TEMPLATE_FILES = [
     '4121601-门诊乳腺中心-门诊病历(初诊)-乳房肿块-门诊病历(初诊).html',
     '4240100-门诊口腔科-门诊病历(初诊)-牙髓炎-门诊病历(初诊).html',
     '4280000-门诊推拿科-门诊病历(初诊)-神经根型颈椎病-门诊病历(初诊).html',
+    # 配套的初复诊
+    '4270000-门诊针灸科-门诊病历(初诊)-膝关节痛-门诊病历(初诊).html',
+    '4360127-九舍门诊眼科-门诊病历(初诊)-眼科(一般)-门诊病历(初诊).html',
+    '4270000-门诊针灸科-门诊病历(初诊)-颈椎病-门诊病历(初诊).html',
+    '4270000-门诊针灸科-门诊病历(初诊)-腰痛-门诊病历(初诊).html',
+    '4270000-门诊针灸科-门诊病历(初诊)-肩关节痛-门诊病历(初诊).html',
+    '4360117-九舍门诊普内科-通用-初诊-门诊病历(初诊).html',
+    '4270000-门诊针灸科-门诊病历(初诊)-周围性面瘫-门诊病历(初诊).html'
 ]

@@ -19,13 +19,18 @@ def get_sentence_extract_instance(sentence):
     sentence_text = ''.join([i[0] for i in sentence])
     if '等不良情绪' in sentence_text:
         return SentenceExtractBase(sentence)
-    # TODO：后期结构调整，临时代码
+    # 无烟酒等不良嗜好
     elif '烟、酒' in sentence_text:
-        return HardCodeSentenceExtract(sentence)
-    elif '等' in sentence_text:
+        return DrinkSmokeSentenceExtract(sentence)
+    # 有高血压、脑梗塞、糖尿病、哮喘病史等
+    elif re.search('[有无].+等', sentence_text):
         return InfiniteEnumSentenceExtract(sentence)
+    # 已婚、已育
     elif "'婚'" in str(sentence) or "'育'" in str(sentence):
-        return HardCodeSentenceExtract2(sentence)
+        return MarriageChildbirthSentenceExtract(sentence)
+    # 腰痹（瘀血证、寒湿证、肾虚证）
+    elif re.findall('[\(（].+、.+[\)）]', sentence_text):
+        return BracketsEnumSentenceExtract(sentence)
     else:
         return SentenceExtractBase(sentence)
 
@@ -354,7 +359,7 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
         segment2 = self._get_positive_segment(enums, action_text, suffix_text)
 
         segment = {
-            cons.KEY_LABEL: '{}{}'.format(action_text, ''.join(enums)),
+            cons.KEY_LABEL: self._get_key_label() or '{}{}'.format(action_text, ''.join(enums)),
             cons.KEY_TYPE: cons.VALUE_TYPE_RADIO,
             cons.KEY_VALUE: ['0'],
             cons.KEY_OPTIONS: [segment1] + segment2
@@ -435,71 +440,129 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
 
         return segment2
 
+    def _get_key_label(self, **kwargs):
+        """
+        如果是特殊的label名，可以重写
+        :param kwargs:
+        :return:
+        """
+        pass
 
-class HardCodeSentenceExtract(InfiniteEnumSentenceExtract):
+
+class DrinkSmokeSentenceExtract(InfiniteEnumSentenceExtract):
     """
-    烟酒硬编码的类型
+    烟酒特殊情况
+
     """
 
     def _get_positive_segment(self, enums, action_text, suffix_text):
-        if '酒' in enums and '烟' in enums:
-            return [
-                conf.POSITIVE_EXTENSION_SEGMENTS['烟'],
-                conf.POSITIVE_EXTENSION_SEGMENTS['酒'],
-            ]
-        elif '婚' in enums or '婚' in suffix_text:
-            return [
-                conf.POSITIVE_EXTENSION_SEGMENTS['婚']
-            ]
-        elif '育' in enums or '育' in suffix_text:
-            return [
-                conf.POSITIVE_EXTENSION_SEGMENTS['育']
-            ]
-        else:
-            print()
+        return [
+            conf.POSITIVE_EXTENSION_SEGMENTS['烟'],
+            conf.POSITIVE_EXTENSION_SEGMENTS['酒'],
+        ]
 
 
-class HardCodeSentenceExtract2(SentenceExtractBase):
-    def extract_segments(self):
-        """
-        瞎写的代码，后续重构
-        已婚已育的segment
-        硬写代码
-        :return:
-        """
-        word_sign = '婚' if '婚' in str(self.sentence) else '育'
-        # 供后续校验对比使用
-        sentence_text = ''.join([i[0] for i in self.sentence])
+class MarriageChildbirthSentenceExtract(InfiniteEnumSentenceExtract):
+    """
+    婚育的特殊情况
+    """
+    def __init__(self, sentence):
+        super(MarriageChildbirthSentenceExtract, self).__init__(sentence)
+        self.word_sign = '婚' if '婚' in str(self.sentence) else '育'
 
-        # 判断收尾的标点符号
-        if self.sentence[0][1] == 'x':
-            before_punctuation = self.sentence.pop(0)[0]
-        else:
-            before_punctuation = ''
-        if self.sentence[-1][1] == 'x':
-            after_punctuation = self.sentence.pop()[0]
-        else:
-            after_punctuation = ''
-
-        # "无" 对应的segment
-        segment1 = {
+    def _get_negative_segment(self, enums, action_text, suffix_text):
+        return {
             cons.KEY_LABEL: '未',
-            cons.KEY_DISPLAY: '未{}'.format(word_sign),
+            cons.KEY_DISPLAY: '未{}'.format(self.word_sign),
             cons.KEY_PROPS: {
                 cons.KEY_COLOR: 'orange',
             },
             cons.KEY_ADDITION: None,
             cons.KEY_VALUE: '0',
         }
-        # "有" 对应的segment
-        segment2 = conf.POSITIVE_EXTENSION_SEGMENTS[word_sign]
 
-        segment = {
-            cons.KEY_LABEL: word_sign,
-            cons.KEY_TYPE: cons.VALUE_TYPE_RADIO,
-            cons.KEY_VALUE: ['0'],
-            cons.KEY_OPTIONS: [segment1, segment2]
-        }
-        display = '{{{}}}'.format(segment[cons.KEY_LABEL])
+    def _get_positive_segment(self, enums, action_text, suffix_text):
+        return [
+            conf.POSITIVE_EXTENSION_SEGMENTS[self.word_sign]
+        ]
 
-        return [(segment, before_punctuation, after_punctuation, sentence_text, display)]
+    def _get_key_label(self, **kwargs):
+        """
+        获取label名
+        :param kwargs:
+        :return:
+        """
+        return self.word_sign
+
+    # def extract_segments(self):
+    #     """
+    #     瞎写的代码，后续重构
+    #     已婚已育的segment
+    #     硬写代码
+    #     :return:
+    #     """
+    #     word_sign = '婚' if '婚' in str(self.sentence) else '育'
+    #     # 供后续校验对比使用
+    #     sentence_text = ''.join([i[0] for i in self.sentence])
+    #
+    #     # 判断收尾的标点符号
+    #     if self.sentence[0][1] == 'x':
+    #         before_punctuation = self.sentence.pop(0)[0]
+    #     else:
+    #         before_punctuation = ''
+    #     if self.sentence[-1][1] == 'x':
+    #         after_punctuation = self.sentence.pop()[0]
+    #     else:
+    #         after_punctuation = ''
+    #
+    #     # "有" 对应的segment
+    #     segment2 = conf.POSITIVE_EXTENSION_SEGMENTS[word_sign]
+    #
+    #     segment = {
+    #         cons.KEY_LABEL: word_sign,
+    #         cons.KEY_TYPE: cons.VALUE_TYPE_RADIO,
+    #         cons.KEY_VALUE: ['0'],
+    #         cons.KEY_OPTIONS: [segment1, segment2]
+    #     }
+    #     display = '{{{}}}'.format(segment[cons.KEY_LABEL])
+    #
+    #     return [(segment, before_punctuation, after_punctuation, sentence_text, display)]
+
+
+class BracketsEnumSentenceExtract(SentenceExtractBase):
+    """
+    针对括号中存在枚举的情况
+    腰痹（瘀血证、寒湿证、肾虚证）
+    """
+
+    def __init__(self, sentence):
+        new_sentence = self._get_new_sentence(sentence)
+        self.sentence = new_sentence
+
+    def _get_new_sentence(self, sentence):
+        """
+        将括号中的选项拆分出来
+        :param sentence: [['腰', 'n'], ['痹', 'ng'], ['（', 'n'], ['瘀血证', 'n'], ['、', 'x'], ['寒湿证', 'n'], ['、', 'x'], ['肾虚证', 'n'], ['）', 'n']]
+        :return: [['腰', 'n'], ['痹', 'ng'], ['（', 'n'], ['瘀血证', 'option'], ['）', 'n']]
+        """
+        options = set()
+        is_option = False
+        for ind, i in enumerate(sentence):
+            if re.search('[\(（]', i[0]):
+                # 当遇到左括号，下一个则为option
+                is_option = True
+                left_bracket_ind = ind
+            elif re.search('[\)）]', i[0]):
+                # 当遇到右括号，则关闭标识
+                is_option = False
+                right_bracket_ind = ind
+            elif is_option and i[1] != 'x':
+                options.add(i[0])
+
+        options = list(options)
+        # 能进入这里，肯定有左右括号，也肯定有两个bracket_ind
+        new_sentence = sentence[:left_bracket_ind + 1] + [[options[0], cons.AG_OPTION]] + sentence[right_bracket_ind:]
+        # 在配置中添加：{'瘀血证': [['瘀血证', '寒湿证', '肾虚证'], 1]}
+        conf.OPTION_MAP[options[0]] = [options, 1]
+
+        return new_sentence
