@@ -110,8 +110,21 @@ class SentenceExtractBase:
         # 解析选项
         if cons.SPLIT_TEXT in option:
             option_texts = option.split(cons.SPLIT_TEXT)
-            # 如果已经解析出了option，默认按枚举值来看
+            # 默认视为枚举值（orange）
             start_ind = 1
+            # 如果选项能匹配到配置，则按照配置中的start_ind
+            for option_text in option_texts:
+                cfg_info = conf.OPTION_MAP.get(option_text)
+                if cfg_info:
+                    option_texts_cfg, start_ind = cfg_info
+                    # 只取配置的第一个作为阴性，其余的以解析结果为准，不参考配置信息
+                    # 否则“无/I度/II度” 会变成 “无/有/I度/II度”
+                    first_option = option_texts_cfg[0]
+                    if first_option in option_texts:
+                        option_texts.remove(first_option)
+                    option_texts.insert(0, first_option)
+                    # 只匹配一次配置即可
+                    break
         else:
             option_texts, start_ind = conf.OPTION_MAP[option]
 
@@ -466,6 +479,7 @@ class MarriageChildbirthSentenceExtract(InfiniteEnumSentenceExtract):
     """
     婚育的特殊情况
     """
+
     def __init__(self, sentence):
         super(MarriageChildbirthSentenceExtract, self).__init__(sentence)
         self.word_sign = '婚' if '婚' in str(self.sentence) else '育'

@@ -33,9 +33,12 @@ def get_block_extract_instance(block):
             return SpecialWordBlockExtract(block, [words])
 
     # 直接展示
+    raw_words = []
     for display_text in conf.DISPLAY_SENTENCE_TEXTS:
         if display_text in block:
-            return DisplaySentenceBlockExtract(block, [display_text])
+            raw_words.append(display_text)
+    if raw_words:
+        return DisplaySentenceBlockExtract(block, raw_words)
 
     return BlockExtractBase(block)
 
@@ -115,7 +118,10 @@ class BlockExtractBase:
                 sentences.append([i])
             else:
                 # 通用逻辑
-                if i[1] in [cons.AG_OPTION, cons.AG_TEXT]:
+                if i[1] == cons.AG_OPTION:
+                    ag_sign = True
+                    part_sign = True
+                elif i[1] == cons.AG_TEXT:
                     ag_sign = True
                 elif 'n' in i[1] or 'v' in i[1] or 'z' in i[1]:
                     part_sign = True
