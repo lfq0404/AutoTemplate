@@ -6,6 +6,9 @@
 # @Description:
 from string import punctuation as cn_punc
 from zhon.hanzi import punctuation as zh_punc
+import os
+
+BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 
 # 暂时不需要抓取的段落
 NOT_EXTRACT_PARAGRAPHS = '(现病史|主诉)'
@@ -100,3 +103,4 @@ HOST = 'localhost'
 USER = 'root'
 PASSWORD = 'a5300328'
 DB_NAME = 'aiwizard_test'
+
