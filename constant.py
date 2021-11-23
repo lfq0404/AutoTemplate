@@ -88,19 +88,19 @@ VALUE_CUSTOM_TEXT = '自定义文本'
 # 原始模板地址
 RAW_TEMPLATES_PATH = '/Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞金门急诊模板配置/rawTemplates'
 # 输出的Excel
-EXCEL_FILE_PATH = 'rj_templates.xlsx'
-EXCEL_CHECK_FILE_PATH = 'rj_check_templates.xlsx'
-PRESENT_FILE_PATH = '现病史解析记录.xlsx'
+EXCEL_FILE_PATH = '{}/rj_templates.xlsx'.format(BASE_PATH)
+EXCEL_CHECK_FILE_PATH = '{}/rj_check_templates.xlsx'.format(BASE_PATH)
+PRESENT_FILE_PATH = '{}/现病史解析记录.xlsx'.format(BASE_PATH)
 SHEET_NAME = '模板'
 
 # DB配置
-# HOST = '172.18.0.114'
-# USER = 'generator'
-# PASSWORD = 'Generator@123'
-# DB_NAME = 'aiwizard_test'
-
-HOST = 'localhost'
-USER = 'root'
-PASSWORD = 'a5300328'
+HOST = '172.18.0.114'
+USER = 'generator'
+PASSWORD = 'Generator@123'
 DB_NAME = 'aiwizard_test'
+
+# HOST = 'localhost'
+# USER = 'root'
+# PASSWORD = 'a5300328'
+# DB_NAME = 'aiwizard_test'
 

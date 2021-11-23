@@ -346,7 +346,7 @@ def inert_into_mysql(package_infos, package_diseases_map, departments):
         #     sql = get_insert_sql('package', infos)
         #     package_id = exec_insert_sql(sql)
 
-    def insert_disease_package(disease_id, department_id, package_id, _type):
+    def insert_disease_package(disease_id, department_code, package_id, _type):
         """
         新建desease_package的映射关系
         :param disease_id:
@@ -355,11 +355,14 @@ def inert_into_mysql(package_infos, package_diseases_map, departments):
         :param _type:
         :return:
         """
+        sql = 'select id from {} where code = {} and org_code = {}'.format('department', department_code, rj_organization_code)
+        cur.execute(sql)
+        department = cur.fetchall()
         sql = get_insert_sql(
             'disease_package_v2',
             {
                 'owner_type': 'department',
-                'owner_id': department_id,
+                'owner_id': department[0][0],
                 'disease_id_type': 'DISEASE',
                 'disease_id': disease_id,
                 'package_id': package_id,
@@ -386,7 +389,7 @@ def inert_into_mysql(package_infos, package_diseases_map, departments):
             print('该模板为空，不入库：{}！！！'.format(file_name))
             continue
         print('[{}]开始处理：{}'.format(num, file_name))
-        department_id, department_name = extract_file_name(file_name)
+        department_code, department_name = extract_file_name(file_name)
         if '初诊' in file_name:
             _type = 'INITIAL'
         elif '复诊' in file_name:
@@ -409,7 +412,7 @@ def inert_into_mysql(package_infos, package_diseases_map, departments):
                 # 一个疾病对应一个模板
                 package_id = insert_package(package_info)
                 # 4.2、与疾病相关的模板
-                insert_disease_package(disease_id, department_id, package_id, _type)
+                insert_disease_package(disease_id, department_code, package_id, _type)
 
 
 def extract_file_name(file_name):
@@ -418,9 +421,9 @@ def extract_file_name(file_name):
     :param file_name:
     :return:
     """
-    department_id, department = re.findall('(.+?)-(.+?)-', file_name)[0]
+    department_code, department = re.findall('(.+?)-(.+?)-', file_name)[0]
 
-    return department_id, department
+    return department_code, department
 
 
 def init_datas():
@@ -446,20 +449,22 @@ def init_datas():
         files.add(file_name)
     for file_name in files:
         # 完善department配置
-        department_id, department = extract_file_name(file_name)
+        department_code, department = extract_file_name(file_name)
         virtual_name = 'rj_{}'.format(department)
-        sql = 'select id from {} where id={}'.format('department', department_id)
+        sql = 'select id from {} where code = {} and org_code = {}'.format('department', department_code,
+                                                                     rj_organization_code)
         item = cur.execute(sql)
         if not item:
             sql = get_insert_sql(
                 'department',
                 {
-                    'id': department_id,
                     'org_code': rj_organization_code,
-                    'code': department,
+                    'code': department_code,
                     'name': department
                 })
-            exec_insert_sql(sql)
+            department_id = exec_insert_sql(sql)
+        else:
+            department_id = cur.fetchall()[0][0]
 
         # 完善virtual_department配置
         sql = 'select id from {} where name="{}"'.format('virtual_department', virtual_name)
@@ -538,7 +543,7 @@ def main():
     # 获取package与disease的关系
     package_diseases_map = get_package_diseases_map()
     # 数据入库
-    inert_into_mysql(package_infos, package_diseases_map, departments)
+    # inert_into_mysql(package_infos, package_diseases_map, departments)
     # 记录log
     record_delete_log()
 
