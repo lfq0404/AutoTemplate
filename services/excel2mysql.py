@@ -543,7 +543,7 @@ def main():
     # 获取package与disease的关系
     package_diseases_map = get_package_diseases_map()
     # 数据入库
-    # inert_into_mysql(package_infos, package_diseases_map, departments)
+    inert_into_mysql(package_infos, package_diseases_map, departments)
     # 记录log
     record_delete_log()
 
