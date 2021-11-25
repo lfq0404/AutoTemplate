@@ -127,9 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-*templates.xlsx
 delete_log*.sql
 *.json
 *.png
 123.py
 病历书写规范.pdf
+*.ipynb

@@ -91,6 +91,7 @@ RAW_TEMPLATES_PATH = '/Users/jeremy.li/Basebit/Documents/develop/smart/20211013-
 EXCEL_FILE_PATH = '{}/rj_templates.xlsx'.format(BASE_PATH)
 EXCEL_CHECK_FILE_PATH = '{}/rj_check_templates.xlsx'.format(BASE_PATH)
 PRESENT_FILE_PATH = '{}/现病史解析记录.xlsx'.format(BASE_PATH)
+TEMPLATE_DISEASE_FILE_PATH = '{}/近1年门诊常用科室模板与disease.xlsx'.format(BASE_PATH)
 SHEET_NAME = '模板'
 
 # DB配置

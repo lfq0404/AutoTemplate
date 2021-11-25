@@ -43,7 +43,7 @@ def get_package_diseases_map():
     """
     # 医疗团队产出的映射关系
     package_diseases_map = {}
-    datas = read_excel('近1年门诊常用科室模板与disease.xlsx', 'Sheet1')
+    datas = read_excel(cons.TEMPLATE_DISEASE_FILE_PATH, 'Sheet1')
     for line in datas.itertuples():
         file_name = line._3
         if pandas.isna(file_name) or '-' not in file_name:
