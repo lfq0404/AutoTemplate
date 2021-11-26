@@ -176,7 +176,6 @@ JIEBA_USER_WORDS = [
     ['原籍', DEFAULT_FREQUENCY, 'option'],
     ['骶棘', DEFAULT_FREQUENCY, 'option'],
     ['条索样', DEFAULT_FREQUENCY, 'option'],
-    ['红肿', DEFAULT_FREQUENCY, 'option'],
     ['压痛明显', DEFAULT_FREQUENCY, 'option'],
     ['肱二头肌、肱三头肌', DEFAULT_FREQUENCY, 'option'],
     ['合作', DEFAULT_FREQUENCY, 'option'],
@@ -246,7 +245,6 @@ OPTION_MAP = {
     '原籍': [['原籍', EXTENSION_OPTIONS], 0],
     '骶棘': [['骶棘', EXTENSION_OPTIONS], 1],
     '条索样': [['条索样', EXTENSION_OPTIONS], 1],
-    '红肿': [['正常', '红肿'], 0],
     '压痛明显': [['压痛不明显', '压痛明显'], 0],
     '肱二头肌、肱三头肌': [['肱二头肌', '肱三头肌', '肱二头肌、肱三头肌'], 1],
     '合作': [['合作', '不配合'], 0],
@@ -807,5 +805,4 @@ EXTRACT_TEMPLATE_FILES = [
     '4121601-门诊乳腺中心-门诊病历(初诊)-赫赛汀-门诊病历(初诊).html',
     '4121601-门诊乳腺中心-门诊病历(初诊)-乳腺癌新辅助化疗-门诊病历(初诊).html',
     '4270000-门诊针灸科-门诊病历(初诊)-膝关节痛-门诊病历(初诊).html',
-
 ]

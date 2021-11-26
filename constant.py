@@ -100,8 +100,8 @@ USER = 'generator'
 PASSWORD = 'Generator@123'
 DB_NAME = 'aiwizard_test'
 
-# HOST = 'localhost'
-# USER = 'root'
-# PASSWORD = 'a5300328'
-# DB_NAME = 'aiwizard_test'
+HOST = 'localhost'
+USER = 'root'
+PASSWORD = 'a5300328'
+DB_NAME = 'aiwizard_test'
 
