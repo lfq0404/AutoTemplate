@@ -34,6 +34,7 @@ all_files = [
     '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌靶向+化疗-门诊病历(配药).html',
     '4270000-门诊针灸科-门诊病历(复诊)-肩关节痛-门诊病历(复诊).html',
     '4270000-门诊针灸科-门诊病历(复诊)-周围性面瘫-门诊病历(复诊).html',
+
     '4370500-特需门诊-门诊配药-特需内镜治疗-门诊病历(配药).html',
     '4240100-门诊口腔科-门诊病历(初诊)-洗牙-门诊病历(初诊).html',
     '4240100-门诊口腔科-门诊病历(初诊)-智齿阻生牙拔牙-门诊病历(初诊).html',
@@ -67,9 +68,17 @@ all_files = [
 for file in all_files:
     print(file)
     department_code = int(re.findall('(\d+)-', file)[0])
+    if '初诊' in file:
+        _type = 'INITIAL'
+    elif '复诊' in file:
+        _type = 'SUBSEQUENT'
+    else:
+        _type = 'MEDICINE'
+
     with open('aiwizard.html', 'r') as f:
         html = f.read()
     html = re.sub('deptCode: "(\d+)"', 'deptCode: "{}"'.format(department_code), html)
+    html = re.sub('tplType: "(.+)"', 'tplType: "{}"'.format(_type), html)
     with open('aiwizard.html', 'w') as f:
         f.write(html)
     while input('打开原始HTML与aiwizard，对比效果。如果继续，请输入y') != 'y':
