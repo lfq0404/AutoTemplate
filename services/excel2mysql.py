@@ -10,10 +10,12 @@ import datetime
 import json
 import re
 import time
+import traceback
 
 import pandas
 import pymysql
 import six
+from pymysql.converters import escape_string
 
 import constant as cons
 import config as conf
@@ -175,8 +177,7 @@ def format_sql(value):
     :param value:
     :return:
     """
-    return value if isinstance(value, (datetime.datetime, float, int, datetime.date)) or "'" not in value \
-        else value.replace("'", "\\'")
+    return value if isinstance(value, (datetime.datetime, float, int, datetime.date)) else escape_string(value)
 
 
 def get_insert_sql(table_name, infos: dict, sign=1):
@@ -355,7 +356,8 @@ def inert_into_mysql(package_infos, package_diseases_map, departments):
         :param _type:
         :return:
         """
-        sql = 'select id from {} where code = {} and org_code = {}'.format('department', department_code, rj_organization_code)
+        sql = 'select id from {} where code = {} and org_code = {}'.format('department', department_code,
+                                                                           rj_organization_code)
         cur.execute(sql)
         department = cur.fetchall()
         sql = get_insert_sql(
@@ -452,7 +454,7 @@ def init_datas():
         department_code, department = extract_file_name(file_name)
         virtual_name = 'rj_{}'.format(department)
         sql = 'select id from {} where code = {} and org_code = {}'.format('department', department_code,
-                                                                     rj_organization_code)
+                                                                           rj_organization_code)
         item = cur.execute(sql)
         if not item:
             sql = get_insert_sql(
@@ -543,7 +545,10 @@ def main():
     # 获取package与disease的关系
     package_diseases_map = get_package_diseases_map()
     # 数据入库
-    inert_into_mysql(package_infos, package_diseases_map, departments)
+    try:
+        inert_into_mysql(package_infos, package_diseases_map, departments)
+    except:
+        traceback.print_exc()
     # 记录log
     record_delete_log()
 

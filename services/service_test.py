@@ -28,6 +28,7 @@ if __name__ == '__main__':
     text = '流行病学史：有无发病前2周内国内重点地区旅行史，时间：____'
     text = '''今以 2%利多卡因5ml/4%阿替卡因1.7ml 行局麻，拔　，远中龈切/去骨/分牙，顺利，置明胶海绵，纱布咬合，告医嘱。 '''
     # 针对阳性需要扩展说明的情况
+    text = '''晶体清/浑浊  , 混浊 晶体混浊类型'''
     text = ''' 长期生活于原籍，无烟酒等不良嗜好，无冶游史。'''
     text = '''腰痹（瘀血证、寒湿证、肾虚证）'''
     text = '''无高血压、脑梗塞、糖尿病、哮喘病史等'''
@@ -53,7 +54,11 @@ if __name__ == '__main__':
     text = '''已/未 婚'''
     # 一句话中多个选项，考虑拆分，而不嵌套
     text = '''双侧腋窝及锁骨上未及异常肿大淋巴结'''
-    text = '''HR：____  次/分，BP：____  mmHg，RR:____  次/分，SP02：_____  %  ，有无   咽部红肿 ，肺部听诊：____ ；其它：____  ；'''
+    # 已经把选项分别展示出来了，怎么处理
+    text = '''眼压：右：[0] 左：[0] mmHg'''
+    # 有些是应该为绿色，有些否应该为绿色
+    text = '''2、拔管情况：导管是否完整：是/否 。拔管过程 拔管过程  '''
+    text = '''弯腰及转身活动受限，腰2到腰5棘突旁压痛明显'''
 
 
     # type_name = '其他'
@@ -76,7 +81,8 @@ if __name__ == '__main__':
                 segment, before_punctuation, after_punctuation, sentence_text, display = sgmt
                 paragraph_display += '{}{}{}'.format(before_punctuation, display, after_punctuation)
                 if segment:
-                    segments.append([segment, sentence_text])
+                    # segments.append([segment, sentence_text])
+                    segments.append(segment)
 
     paragraph_display = '<b>{}：{}</b>'.format(type_name, paragraph_display)
     print(paragraph_display)

@@ -12,7 +12,7 @@ import constant as cons
 import config as conf
 
 # 读取自定义的词组
-for word in conf.JIEBA_USER_WORDS:
+for word in conf.JIEBA_USER_DICTS:
     jieba.add_word(*word)
 # 为了不拆分userword中的特殊字符。eg：中括号等
 psg.re_han_internal = re.compile('([^°]+)', re.U)
@@ -248,13 +248,21 @@ class SpecialWordBlockExtract(BlockExtractBase):
         默认利用jieba分词
         :return: [['有无', 'option'], ['手术史', 'n']]
         """
+        # 临时添加分词规则
         for word in self.words:
             jieba.add_word(word[0], conf.DEFAULT_FREQUENCY, word[1])
 
+        # TODO：小概率事件--如果一句话为："有无咽部红肿 ，身体红肿"，此时两个红肿的类型一样
         block_cut = super(SpecialWordBlockExtract, self).word_segment()
 
+        # 删除临时分词规则，如果与原来的配置冲突，则需要复原
         for word in self.words:
             jieba.del_word(word[0])
+            if word[0] in conf.JIEBA_USER_WORDS:
+                for w in conf.JIEBA_USER_DICTS:
+                    if w[0] == word[0]:
+                        jieba.add_word(*w)
+                        break
 
         return block_cut
 

@@ -84,7 +84,8 @@ class ExtractCore:
 
         for ind, paragraph in enumerate(paragraphs):
             # 由于有较为灵活的断言，不能用自带的re模块
-            paragraph = regex.sub('|'.join(conf.ERROR_MATCH_TEXTS), '', paragraph)
+            for patt in conf.ERROR_MATCH_TEXTS:
+                paragraph = regex.sub(patt, '', paragraph)
 
             # 只获取需要的文本块
             temp = re.findall('^([\u4e00-\u9fa5]+)[:：]?([\s\S]*)', paragraph)
