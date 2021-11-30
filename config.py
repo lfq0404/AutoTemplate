@@ -14,7 +14,7 @@ DEFAULT_FREQUENCY = 99999999999999
 EXTENSION_OPTIONS = 'EXTENSION_OPTIONS'
 
 # jieba自定义词组
-JIEBA_USER_WORDS = [
+JIEBA_USER_DICTS = [
     ['手术史', DEFAULT_FREQUENCY, 'n'],
     ['家族性', DEFAULT_FREQUENCY, 'n'],
     ['疾病史', DEFAULT_FREQUENCY, 'n'],
@@ -86,6 +86,15 @@ JIEBA_USER_WORDS = [
     ['S1-12', DEFAULT_FREQUENCY, 'n'],
     ['Fc棉捻', DEFAULT_FREQUENCY, 'n'],
     ['氢氧化钙糊剂', DEFAULT_FREQUENCY, 'n'],
+    ['C/D', DEFAULT_FREQUENCY, 'n'],
+    ['右：', DEFAULT_FREQUENCY, 'n'],
+    ['左：', DEFAULT_FREQUENCY, 'n'],
+    ['右眼结膜充血', DEFAULT_FREQUENCY, 'n'],
+    ['左眼结膜充血', DEFAULT_FREQUENCY, 'n'],
+    ['T', DEFAULT_FREQUENCY, 'n'],
+    ['导管是否完整', DEFAULT_FREQUENCY, 'n'],
+    ['阻生', DEFAULT_FREQUENCY, 'n'],
+    ['废用', DEFAULT_FREQUENCY, 'n'],
 
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['港体及导管处皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
@@ -111,6 +120,7 @@ JIEBA_USER_WORDS = [
     ['侧', DEFAULT_FREQUENCY * 10, 'n'],
     ['明显红肿', DEFAULT_FREQUENCY * 10, 'n'],
     ['氯双', DEFAULT_FREQUENCY * 10, 'n'],
+    ['肩峰下缘', DEFAULT_FREQUENCY * 10, 'n'],
 
     ['时间', DEFAULT_FREQUENCY // 10, 'text'],
     ['[0]', DEFAULT_FREQUENCY, 'text'],
@@ -176,13 +186,22 @@ JIEBA_USER_WORDS = [
     ['原籍', DEFAULT_FREQUENCY, 'option'],
     ['骶棘', DEFAULT_FREQUENCY, 'option'],
     ['条索样', DEFAULT_FREQUENCY, 'option'],
-    ['压痛明显', DEFAULT_FREQUENCY, 'option'],
     ['肱二头肌、肱三头肌', DEFAULT_FREQUENCY, 'option'],
     ['合作', DEFAULT_FREQUENCY, 'option'],
     ['-/±/+', DEFAULT_FREQUENCY, 'option'],
     ['黄红状', DEFAULT_FREQUENCY, 'option'],
+    ['++/+++', DEFAULT_FREQUENCY, 'option'],
+    ['下', DEFAULT_FREQUENCY, 'option'],
+    ['双侧上', DEFAULT_FREQUENCY, 'option'],
+    ['多', DEFAULT_FREQUENCY // 10, 'option'],
+    ['红肿', DEFAULT_FREQUENCY // 10, 'option'],
+    ['+/-', DEFAULT_FREQUENCY, 'option'],
+    ['减轻', DEFAULT_FREQUENCY, 'option'],
+    ['不能', DEFAULT_FREQUENCY, 'option'],
+    ['明显', DEFAULT_FREQUENCY // 10, 'option'],
 ]
-
+# 自定义词组存在的词
+JIEBA_USER_WORDS = [i[0] for i in JIEBA_USER_DICTS]
 # 词性为指定的text，且需要在display中保留的词
 RETAIN_TEXTS = ['时间']
 
@@ -245,14 +264,30 @@ OPTION_MAP = {
     '原籍': [['原籍', EXTENSION_OPTIONS], 0],
     '骶棘': [['骶棘', EXTENSION_OPTIONS], 1],
     '条索样': [['条索样', EXTENSION_OPTIONS], 1],
-    '压痛明显': [['压痛不明显', '压痛明显'], 0],
     '肱二头肌、肱三头肌': [['肱二头肌', '肱三头肌', '肱二头肌、肱三头肌'], 1],
     '合作': [['合作', '不配合'], 0],
     '平稳': [['平稳', '急促'], 0],
     '红润': [['红润', '苍白', '发绀'], 0],
     '有力': [['有力', '低钝', '遥远'], 0],
     '-/±/+': [['-', '±', '+'], 0],
+    '++/+++': [['-', '+', '++', '+++'], 0],
     '黄红状': [['黄红状'], 0],
+    '下': [['下', '上'], 1],
+    '多': [['少', '多'], 0],
+    '双侧上': [['双侧上', '双侧下', '左侧下', '左侧上', '右侧下', '右侧上'], 1],
+    '红肿': [['正常', '红肿'], 0],
+    '透明': [['透明', '云翳', '斑翳'], 0],
+    '圆': [['圆', '欠圆'], 0],
+    '+/-': [['-', '+'], 0],
+    'n': [['n', 'n+1', 'n+2', 'n-1'], 0],
+    '红': [['红', '暗紫', '有瘀斑'], 0],
+    '龋': [['正常', '龋', '缺损'], 0],
+    '紧张': [['正常', '紧张'], 0],
+    '减轻': [['减轻', '加重'], 0],
+    '可以': [['可以', '不能'], 0],
+    '不能': [['可以', '不能'], 0],
+    '阻生': [['阻生', '废用'], 0],
+    '明显': [['不明显', '明显'], 0],
 }
 
 # 针对OPTION_MAP拆解的词，作用在display中会有特殊的展示
@@ -431,8 +466,11 @@ NOT_BROKEN_SENTENCE = ['°', ' ', '(', ')', '（', '）', '+', '-', '’', '：'
 # 经常会匹配错的文本，需要删除
 # 某些文本满足“只要后面不是跟着 .*[:：] ，就继续匹配”的规则，但实际是不需要的，删除
 ERROR_MATCH_TEXTS = [
-    '/输入', '/$', '^/',
+    '/输入',
+    '/$',
+    '^/',
     '(?<=^.*[:：])(/)',  # 删除紧跟着type_name的 / 。eg：'既往史：/(与本疾病相关既往史)' --> '既往史：(与本疾病相关既往史)'
+    '处理 辅助检查.+emr_reference.+',
     '辅助检查',
     '检验：\s*[无]?\s*$',
 ]
@@ -554,7 +592,7 @@ PRE_TREATMENT_CFG = [
 
     {
         # “形态”直接结尾，需要添加输入框
-        'pat': '(?<=[形态]$)()',
+        'pat': '(?<=形态$)()',
         'repl': '：输入'
     },
     {
@@ -623,6 +661,39 @@ PRE_TREATMENT_CFG = [
         'repl': '可见一大小约输入溃疡'
     },
     {
+        'pat': '虹膜虹膜病理类型',
+        'repl': '虹膜病理类型：输入'
+    },
+    {
+        'pat': '晶体清/浑浊,混浊晶体混浊类型',
+        'repl': '晶体清/浑浊'
+    },
+    {
+        'pat': '玻璃体清/浑浊视盘边界清/模糊',
+        'repl': '玻璃体清/浑浊，视盘边界清/模糊'
+    },
+    {
+        'pat': '右：\[0\]左：\[0\]输入mmHg',
+        'repl': '右：输入mmHg，左：输入mmHg'
+    },
+    {
+        # 角膜透明/文字描述，可以利用两个字符间的输入框兼容“文字描述”，所以直接删除
+        'pat': '/文字描述',
+        'repl': ''
+    },
+    {
+        'pat': 'Tn/n\+1/n\+2/n-1',
+        'repl': 'T：n/n+1/n+2/n-1'
+    },
+    {
+        'pat': '口角左/右歪斜舌苔白腻',
+        'repl': '口角左/右歪斜，舌苔白腻'
+    },
+    {
+        'pat': '已/未婚',
+        'repl': '已婚'
+    },
+    {
         # （+）后添加标点符号
         'pat': '(（\+）|（\-）)(?![{}])'.format(zh_punc),
         'repl': r'\1，'
@@ -675,6 +746,9 @@ DISPLAY_SENTENCE_TEXTS = [
 SPECIAL_WORDS = [
     ['/有阳性家族史', ['有阳性家族史', 'n']],
     ['体质一般', ['一般', 'option']],
+    ['有无咽部红肿', ['咽部红肿', 'n']],
+    ['关节无红肿畸形', ['红肿畸形', 'n']],
+    ['输入压痛明显', ['压痛明显', 'n']],
 ]
 
 # 无穷枚举中可能出现的前缀词，将相关的词放在display中

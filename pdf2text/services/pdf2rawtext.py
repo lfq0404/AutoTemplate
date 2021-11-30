@@ -3,7 +3,7 @@
 # @Time    : 2021/11/18 16:13
 # @File    : pdf2rawtext.py
 # @Software: Basebit
-# @Description:
+# @Description: 将PDF转为文字
 
 import base64
 import json

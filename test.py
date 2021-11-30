@@ -1,10 +1,10 @@
 import copy
+import datetime
 import json
 import re
 
 import pandas
 import pandas as pd
-
 
 #
 # text = """
@@ -66,6 +66,10 @@ import pandas as pd
 #     ]:
 #         text = regex.sub(pat, r'\1等', text)
 #     assert text == right, '{} --> {}'.format(raw_text, text)
+import pymysql
+import six
+from pymysql.converters import escape_string
+
 from myUtils import read_excel
 
 
@@ -426,11 +430,15 @@ def get_top100_templates():
     add_result = {}
     for raw_top100_html in top100_htmls:
         # top100_html = '0080600-护理专病门诊-PICC护理（拔管护理）模板-门诊病历(配药).html'
-        top100_html = raw_top100_html.replace('（', '(').replace('）', ')').replace('-复诊-', '(复诊)').replace('-初诊-', '(初诊)').replace('-配药-', '(配药)')
+        top100_html = raw_top100_html.replace('（', '(').replace('）', ')').replace('-复诊-', '(复诊)').replace('-初诊-',
+                                                                                                          '(初诊)').replace(
+            '-配药-', '(配药)')
         patt = re.sub('\([\u4e00-\u9fa5]+\)', r'(\([\u4e00-\u9fa5]+\))', top100_html)
         for html in all_htmls:
             if re.search(patt,
-                         html.replace('（', '(').replace('）', ')').replace('-复诊-', '(复诊)').replace('-初诊-', '(初诊)').replace('-配药-', '(配药)')
+                         html.replace('（', '(').replace('）', ')').replace('-复诊-', '(复诊)').replace('-初诊-',
+                                                                                                  '(初诊)').replace(
+                             '-配药-', '(配药)')
                          ):
                 result.setdefault(raw_top100_html, set())
                 result[raw_top100_html].add(html)
@@ -440,7 +448,7 @@ def get_top100_templates():
         sign = False
         for i in v:
             if i != k and i not in top100_htmls:
-                sign=True
+                sign = True
                 print('    {}'.format(i))
                 temp.append(i)
         if sign:
@@ -450,19 +458,143 @@ def get_top100_templates():
 
     print(add_result)
 
+
 def add_excel():
-    add_result = {'4360127-九舍门诊眼科-门诊病历(复诊)-眼科(一般)-门诊病历(复诊).html': ['4360127-九舍门诊眼科-门诊病历(初诊)-眼科(详细)-门诊病历(初诊).html', '4360127-九舍门诊眼科-门诊病历(初诊)-眼科(一般)-门诊病历(初诊).html'], '4360127-九舍门诊眼科-门诊病历(配药)-眼科-门诊病历(配药).html': ['4360127-九舍门诊眼科-门诊病历(复诊)-眼科-门诊病历(复诊).html', '4360127-九舍门诊眼科-门诊病历(初诊)-眼科-门诊病历(初诊).html'], '4360117-九舍门诊普内科-通用-配药-门诊病历(配药).html': ['4360117-九舍门诊普内科-通用-初诊-门诊病历(初诊).html'], '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌辅助内分泌治疗-门诊病历(配药).html': ['4121601-门诊乳腺中心-门诊病历(初诊)-乳腺癌辅助内分泌治疗-门诊病历(初诊).html'], '4360117-九舍门诊普内科-通用-复诊-门诊病历(复诊).html': ['4360117-九舍门诊普内科-通用-初诊-门诊病历(初诊).html'], '4350100-营养门诊-营养门诊病历(配药)-门诊病历(配药).html': ['4350100-营养门诊-营养门诊病历(复诊)-门诊病历(复诊).html', '4350100-营养门诊-营养门诊病历(初诊)-门诊病历(初诊).html'], '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌辅助化疗-门诊病历(配药).html': ['4121601-门诊乳腺中心-门诊病历(初诊)-乳腺癌辅助化疗-门诊病历(初诊).html'], '4121601-门诊乳腺中心-门诊病历(配药)-赫赛汀-门诊病历(配药).html': ['4121601-门诊乳腺中心-门诊病历(初诊)-赫赛汀-门诊病历(初诊).html'], '4270000-门诊针灸科-门诊病历(复诊)-腰痛-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-腰痛-门诊病历(初诊).html'], '4270000-门诊针灸科-门诊病历(复诊)-颈椎病-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-颈椎病-门诊病历(初诊).html'], '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌新辅助化疗-门诊病历(配药).html': ['4121601-门诊乳腺中心-门诊病历(初诊)-乳腺癌新辅助化疗-门诊病历(初诊).html'], '4270000-门诊针灸科-门诊病历(复诊)-肩关节痛-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-肩关节痛-门诊病历(初诊).html'], '4270000-门诊针灸科-门诊病历(复诊)-周围性面瘫-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-周围性面瘫-门诊病历(初诊).html'], '4270000-门诊针灸科-门诊病历(复诊)-膝关节痛-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-膝关节痛-门诊病历(初诊).html']}
+    add_result = {'4360127-九舍门诊眼科-门诊病历(复诊)-眼科(一般)-门诊病历(复诊).html': ['4360127-九舍门诊眼科-门诊病历(初诊)-眼科(详细)-门诊病历(初诊).html',
+                                                                   '4360127-九舍门诊眼科-门诊病历(初诊)-眼科(一般)-门诊病历(初诊).html'],
+                  '4360127-九舍门诊眼科-门诊病历(配药)-眼科-门诊病历(配药).html': ['4360127-九舍门诊眼科-门诊病历(复诊)-眼科-门诊病历(复诊).html',
+                                                               '4360127-九舍门诊眼科-门诊病历(初诊)-眼科-门诊病历(初诊).html'],
+                  '4360117-九舍门诊普内科-通用-配药-门诊病历(配药).html': ['4360117-九舍门诊普内科-通用-初诊-门诊病历(初诊).html'],
+                  '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌辅助内分泌治疗-门诊病历(配药).html': [
+                      '4121601-门诊乳腺中心-门诊病历(初诊)-乳腺癌辅助内分泌治疗-门诊病历(初诊).html'],
+                  '4360117-九舍门诊普内科-通用-复诊-门诊病历(复诊).html': ['4360117-九舍门诊普内科-通用-初诊-门诊病历(初诊).html'],
+                  '4350100-营养门诊-营养门诊病历(配药)-门诊病历(配药).html': ['4350100-营养门诊-营养门诊病历(复诊)-门诊病历(复诊).html',
+                                                            '4350100-营养门诊-营养门诊病历(初诊)-门诊病历(初诊).html'],
+                  '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌辅助化疗-门诊病历(配药).html': ['4121601-门诊乳腺中心-门诊病历(初诊)-乳腺癌辅助化疗-门诊病历(初诊).html'],
+                  '4121601-门诊乳腺中心-门诊病历(配药)-赫赛汀-门诊病历(配药).html': ['4121601-门诊乳腺中心-门诊病历(初诊)-赫赛汀-门诊病历(初诊).html'],
+                  '4270000-门诊针灸科-门诊病历(复诊)-腰痛-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-腰痛-门诊病历(初诊).html'],
+                  '4270000-门诊针灸科-门诊病历(复诊)-颈椎病-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-颈椎病-门诊病历(初诊).html'],
+                  '4121601-门诊乳腺中心-门诊病历(配药)-乳腺癌新辅助化疗-门诊病历(配药).html': ['4121601-门诊乳腺中心-门诊病历(初诊)-乳腺癌新辅助化疗-门诊病历(初诊).html'],
+                  '4270000-门诊针灸科-门诊病历(复诊)-肩关节痛-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-肩关节痛-门诊病历(初诊).html'],
+                  '4270000-门诊针灸科-门诊病历(复诊)-周围性面瘫-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-周围性面瘫-门诊病历(初诊).html'],
+                  '4270000-门诊针灸科-门诊病历(复诊)-膝关节痛-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-膝关节痛-门诊病历(初诊).html']}
     df = read_excel('/Users/jeremy.li/Basebit/Projects/AutoTemplate/近1年门诊常用科室模板与disease.xlsx', 'Sheet1')
     print(df.loc[df[9] >= 100][2].values)
     for exists, adds in add_result.items():
-        department_code, department, num, icd, disease_name, remark = df.loc[df[2] == exists][[3,4,5,6,7,8]].values[0]
+        department_code, department, num, icd, disease_name, remark = \
+            df.loc[df[2] == exists][[3, 4, 5, 6, 7, 8]].values[0]
         for add in adds:
             if not df.loc[df[2] == add].empty:
                 print('已经存在：', add, department_code, department, num, icd, disease_name, remark)
             else:
                 print(add, department_code, department, 100, icd, disease_name, remark)
 
+
+import constant as cons
+
+connection = pymysql.connect(host=cons.HOST,  # host属性
+                             user=cons.USER,  # 用户名
+                             password=cons.PASSWORD,  # 此处填登录数据库的密码
+                             db=cons.DB_NAME  # 数据库名
+                             )
+
+cur = connection.cursor()
+
+
+def exec_insert_sql(sql):
+    """
+    执行insert，并返回id
+    :param sql:
+    :return:
+    """
+
+    cur.execute(sql)
+    _id = connection.insert_id()
+    table_name = re.findall('into (.*?) ', sql, re.I)[0]
+    if _id:
+        print('{}-新id为：{}'.format(table_name, _id))
+    else:
+        print('{}-未更新，SQL为：{}'.format(table_name, sql))
+    connection.commit()
+    return _id
+
+
+def format_sql(value):
+    """
+    格式化sql中的各种格式
+    比如防止单引号等等
+    :param value:
+    :return:
+    """
+    return value if isinstance(value, (datetime.datetime, float, int, datetime.date)) else escape_string(value)
+
+
+def get_insert_sql(table_name, infos: dict, sign=1):
+    """
+    拼接insert的sql语句
+    :param table_name:
+    :param infos:
+    :param sign: 0直接插入数据，不忽略报错；1利用新数据更新老数据；2如果存在相同数据，则以老数据为准
+    :return:
+    """
+    sign = int(sign)
+    col_str = ''
+    row_str = ''
+    for key in infos.keys():
+        if infos[key] is not None:
+            col_str = col_str + " " + key + ","
+            row_str = "{}'{}',".format(row_str, format_sql(infos[key]))
+            sql = "INSERT INTO {} ({}) VALUES ({}) ".format(table_name, col_str[1:-1],
+                                                            row_str[:-1])
+    if sign == 1:
+        # 如果要以新的数据更新老数据，则拼接update语句
+        sql += 'ON DUPLICATE KEY UPDATE '
+        for (key, value) in six.iteritems(infos):
+            if value is not None:
+                sql += "{} = '{}', ".format(key, format_sql(value))
+        sql = sql[:-2]
+    elif sign == 2:
+        # 如果以老的数据为准，则ignore
+        sql = sql.replace('INSERT INTO', 'INSERT IGNORE INTO')
+    else:
+        pass
+    return sql
+
+
+def exec_insert_sql(sql):
+    """
+    执行insert，并返回id
+    :param sql:
+    :return:
+    """
+    cur.execute(sql)
+    _id = connection.insert_id()
+    table_name = re.findall('into (.*?) ', sql, re.I)[0]
+    if _id:
+        print('{}-新id为：{}'.format(table_name, _id))
+    else:
+        print('{}-未更新，SQL为：{}'.format(table_name, sql))
+    connection.commit()
+    return _id
+
+
+def test():
+    text = '[{"display": "{X示}。", "segments": [{"label": "X示", "type": "TEXT", "value": "", "freetextPrefix": "X示：", "freetextPostfix": "", "placeholder": ""}], "title": "检查"}, {"display": "【医学元素\\\\门诊\\\\请假单】1.今局麻下去龋尽，开髓，抽髓，测根长，根管清理扩大至35#-40#，冲洗，吸干，Fc棉球，暂封，告医嘱。2.今去龋，备洞，及穿髓点，置多聚甲醛失活剂，{告医嘱}。", "segments": [{"label": "告医嘱", "type": "RADIO", "value": ["1"], "options": [{"label": "锌基封", "display": "锌基封，告医嘱", "props": {"color": "orange"}, "value": "1", "addition": null}, {"label": "暂封", "display": "暂封，告医嘱", "props": {"color": "orange"}, "value": "2", "addition": null}]}], "title": "病假"}]'
+
+    sql = get_insert_sql('template', {
+        'id': '123',
+        'category': 'CUSTOM',
+        'content': text,
+        'created_at': datetime.datetime.now()
+    }, sign=0)
+    # exec_insert_sql(sql)
+    sql = 'select content from template where id = 123;'
+    cur.execute(sql)
+    res = cur.fetchone()
+    a = res[0]
+
+
 if __name__ == '__main__':
     # temp()
     # get_top100_templates()
-    add_excel()
+    test()
