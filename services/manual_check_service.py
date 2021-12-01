@@ -7,7 +7,8 @@
 import json
 import os
 import re
-import pandas
+import pandas as pd
+import numpy as np
 
 import constant as cons
 import config as conf
@@ -30,15 +31,15 @@ def check_recent_segments():
         num += 1
         # 如果没有模板信息，则不管
         raw_content = line._4
-        if pandas.isna(raw_content) or type(raw_content) is not str or '{' not in raw_content:
+        if pd.isna(raw_content) or type(raw_content) is not str or '{' not in raw_content:
             continue
         # 只提取需要的文件
         if conf.EXTRACT_TEMPLATE_FILES and line._1 not in conf.EXTRACT_TEMPLATE_FILES:
             continue
 
         raw_label = line._3
-        update_label = '' if pandas.isna(line._8) else line._8
-        update_content = '' if pandas.isna(line._9) else line._9
+        update_label = '' if pd.isna(line._8) else line._8
+        update_content = '' if pd.isna(line._9) else line._9
 
         update_segments[raw_content] = {
             'raw_label': raw_label,
@@ -161,27 +162,97 @@ def contrast_segments():
     对比最新数据与人工判读后的准确数据做对比，如果不一致，则需要人工介入
     :return:
     """
+
+    def _update_standard(query):
+        """
+        更新标准数据
+        :param query:
+        :return:
+        """
+        standard_query = pd.Series([True for _ in range(len(standard_datas))])
+        new_query = pd.Series([True for _ in range(len(new_datas))])
+        for i in query:
+            standard_query = standard_query & (standard_datas[i[0]] == i[1])
+            new_query = new_query & (new_datas[i[0]] == i[1])
+
+        # 整行替换
+        standard_datas.loc[standard_query] = new_datas.loc[new_query, [0, 1, 2, 3, 4, 5, 6]].values
+        return
+
     if not os.path.exists(cons.EXCEL_STANDARD_FILE_PATH):
         # 如果不存在，则人工校验后，创建文件
         _manual_check_package()
         datas = get_check_file_datas()
-        datas[[0, 1, 2, 3, 4, 5, 6]].to_excel(cons.EXCEL_STANDARD_FILE_PATH, sheet_name=cons.SHEET_NAME, index=False)
+        datas[[0, 1, 2, 3, 4, 5, 6]].to_excel(cons.EXCEL_STANDARD_FILE_PATH, sheet_name=cons.SHEET_NAME, index=False,
+                                              header=False)
     else:
+        is_pass = True
         # 如果存在，则需要对比新生成的文件与标准数据的区别
         new_datas = get_check_file_datas()
         standard_datas = read_excel(cons.EXCEL_STANDARD_FILE_PATH, cons.SHEET_NAME)
 
         # 先根据new_label修改template_content
-        for num, line in enumerate(new_datas.itertuples()):
+        checked_file_name = ''
+        for _, line in enumerate(new_datas.itertuples()):
             file_name = line._1
-            if type(file_name) is int:
-                continue
-            template_content = line._2
             label = line._3
+            if not re.search('\d+-.+', file_name):
+                continue
+            if pd.isna(label):
+                continue
+            template_display = line._2
             segment_content = line._4
             category_text = line._7
             # 1、判断每个类型下的display是否一样
-            standard_datas.loc[standard_datas[1] == file_name & standard_datas[7] == category_text][0]
+            if checked_file_name != file_name:
+                checked_file_name = file_name
+                standard_display = standard_datas.loc[
+                    (standard_datas[0] == file_name)
+                    & (standard_datas[6] == category_text)].iloc[0][1]
+                if standard_display != template_display:
+                    is_pass = False
+                    print('文件《{}》还需要检查'.format(file_name))
+                    print('1、最新的display：{}'.format(template_display))
+                    print('2、标准的display：{}'.format(standard_display))
+                    text = input('若要用最新数据更新标准数据，请输入1：')
+                    if text == '1':
+                        _update_standard(query=[
+                            [0, file_name],
+                            [6, category_text],
+                        ])
+
+            # 2、检查label对应的content是否一样
+            try:
+                standard_content = standard_datas.loc[
+                    (standard_datas[0] == file_name)
+                    & (standard_datas[6] == category_text)
+                    & (standard_datas[2] == label)
+                    ].iloc[0][3]
+                if standard_content != segment_content:
+                    is_pass = False
+                    print('文件《{}》的 {} 还需要检查'.format(file_name, label))
+                    print('1、最新的content：{}'.format(segment_content))
+                    print('2、标准的content：{}'.format(standard_content))
+                    text = input('若要用最新数据更新标准数据，请输入1：')
+                    if text == '1':
+                        _update_standard(query=[
+                            [0, file_name],
+                            [6, category_text],
+                            [2, label],
+                        ])
+            except IndexError:
+                is_pass = False
+                print('文件《{}》的 {} 还需要检查，出现了新label'.format(file_name, label))
+                text = input('若要用最新数据更新标准数据，请输入1：')
+                if text == '1':
+                    _update_standard(query=[
+                        [0, file_name],
+                        [6, category_text]
+                    ])
+
+        standard_datas.to_excel(cons.EXCEL_STANDARD_FILE_PATH, sheet_name=cons.SHEET_NAME, index=False, header=False)
+        if not is_pass:
+            raise ValueError('请修改后重新执行')
 
 
 def _bug_check(file):
@@ -209,6 +280,6 @@ def _bug_check(file):
 
 
 if __name__ == '__main__':
-    # contrast_segments()
-    file = '4350100-营养门诊-营养门诊病历(复诊)-门诊病历(复诊).html'
-    _bug_check(file)
+    contrast_segments()
+    # file = '4350100-营养门诊-营养门诊病历(复诊)-门诊病历(复诊).html'
+    # _bug_check(file)

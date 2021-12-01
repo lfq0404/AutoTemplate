@@ -10,7 +10,7 @@ import services.excel2mysql as excel2mysql
 import constant as cons
 
 from services.extract_core import ExtractCore
-from services.manul_check_service import check_segments
+from services.manual_check_service import check_recent_segments, contrast_segments
 from services.pandas2excel import record2excel
 
 
@@ -48,14 +48,20 @@ def main():
     reload = input('是否重新根据原始模板提取（y or n）：')
     # reload = 'y'
     if reload == 'y':
+        # 提取信息
         datas = code_extract()
+        # 保存到Excel中
         record2excel(cons.EXCEL_FILE_PATH, datas)
     elif reload == 'n':
         pass
     else:
         raise ValueError('请输入正确的指令')
 
-    check_segments()
+    # 人工校验本次提取结果
+    check_recent_segments()
+    # 与之前的结果进行对比
+    contrast_segments()
+    # 数据入库
     excel2mysql.main()
 
 
