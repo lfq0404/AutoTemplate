@@ -5,16 +5,19 @@
 # @Software: Basebit
 # @Description:
 import json
+import os
+import re
 import pandas
 
 import constant as cons
 import config as conf
 from myUtils import read_excel
+from services.excel2mysql import get_check_file_datas  # 不太规范，后面再调整
 
 
-def check_segments():
-    """check_segments
-    获取人工修改后的segments
+def check_recent_segments():
+    """check_recent_segments
+    人工校验可能有问题的segment，并修改到Excel中
     :return:
     """
     update_segments = {}
@@ -119,3 +122,93 @@ def check_segments():
         raise ValueError('请再次检查check_excel中的label与segment')
 
     return update_segments
+
+
+def _manual_check_package():
+    """
+    人工对最终的package进行校验
+    只要不报错即可
+    :return:
+    """
+    return
+    sign = None
+    for file in conf.EXTRACT_TEMPLATE_FILES:
+        print('file:///Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞金门急诊模板配置/rawTemplates/{}'.format(file))
+        department_code = int(re.findall('(\d+)-', file)[0])
+        if '初诊' in file:
+            _type = 'INITIAL'
+        elif '复诊' in file:
+            _type = 'SUBSEQUENT'
+        else:
+            _type = 'MEDICINE'
+
+        with open('aiwizard.html', 'r') as f:
+            html = f.read()
+        html = re.sub('deptCode: "(\d+)"', 'deptCode: "{}"'.format(department_code), html)
+        html = re.sub('tplType: "(.+)"', 'tplType: "{}"'.format(_type), html)
+        with open('aiwizard.html', 'w') as f:
+            f.write(html)
+        print('打开医院提供的原始HTML与aiwizard.html，对比效果')
+        sign = input('如果没有问题，请直接回车；如果有问题，请输入任意字符，并修改代码逻辑')
+
+    if sign:
+        # 表示之前的结果解析有问题，需要重新跑数据
+        raise ValueError('解析结果有问题，修改解析规则后，请重新跑main.py')
+
+
+def contrast_segments():
+    """
+    对比最新数据与人工判读后的准确数据做对比，如果不一致，则需要人工介入
+    :return:
+    """
+    if not os.path.exists(cons.EXCEL_STANDARD_FILE_PATH):
+        # 如果不存在，则人工校验后，创建文件
+        _manual_check_package()
+        datas = get_check_file_datas()
+        datas[[0, 1, 2, 3, 4, 5, 6]].to_excel(cons.EXCEL_STANDARD_FILE_PATH, sheet_name=cons.SHEET_NAME, index=False)
+    else:
+        # 如果存在，则需要对比新生成的文件与标准数据的区别
+        new_datas = get_check_file_datas()
+        standard_datas = read_excel(cons.EXCEL_STANDARD_FILE_PATH, cons.SHEET_NAME)
+
+        # 先根据new_label修改template_content
+        for num, line in enumerate(new_datas.itertuples()):
+            file_name = line._1
+            if type(file_name) is int:
+                continue
+            template_content = line._2
+            label = line._3
+            segment_content = line._4
+            category_text = line._7
+            # 1、判断每个类型下的display是否一样
+            standard_datas.loc[standard_datas[1] == file_name & standard_datas[7] == category_text][0]
+
+
+def _bug_check(file):
+    """
+    用于处理bug的临时代码，与解析无关
+    :return:
+    """
+    print('file:///Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞金门急诊模板配置/rawTemplates/{}'.format(file))
+    department_code = int(re.findall('(\d+)-', file)[0])
+    if '初诊' in file:
+        _type = 'INITIAL'
+    elif '复诊' in file:
+        _type = 'SUBSEQUENT'
+    else:
+        _type = 'MEDICINE'
+
+    with open('aiwizard.html', 'r') as f:
+        html = f.read()
+    html = re.sub('deptCode: "(\d+)"', 'deptCode: "{}"'.format(department_code), html)
+    html = re.sub('tplType: "(.+)"', 'tplType: "{}"'.format(_type), html)
+    with open('aiwizard.html', 'w') as f:
+        f.write(html)
+    print('打开医院提供的原始HTML与aiwizard.html，对比效果')
+    print()
+
+
+if __name__ == '__main__':
+    # contrast_segments()
+    file = '4350100-营养门诊-营养门诊病历(复诊)-门诊病历(复诊).html'
+    _bug_check(file)

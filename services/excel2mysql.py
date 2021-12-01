@@ -75,24 +75,11 @@ def get_package_diseases_map():
     return package_diseases_map
 
 
-def get_package_infos():
+def get_check_file_datas():
     """
-    获取完整的package信息
+    获取check_templates.xlsx的data，主要是合并new_label与new_content
     :return:
-    {
-    file_name: {
-        template_type: {
-            'segments': {
-                label: segment,
-                label: segment,
-            },
-            'template_content': '<b>婚育史：{婚}，{育}。'
-            }
-        },
-        'PRESENT': 'feature'
-    }
     """
-    package_infos = {}
     datas = read_excel(cons.EXCEL_CHECK_FILE_PATH, cons.SHEET_NAME)
 
     # 先根据new_label修改template_content
@@ -118,9 +105,35 @@ def get_package_infos():
                 or new_label == 'delete'):
             # 更新template_content中的label
             new_template_content = template_content.replace(label, new_label)
-            datas[(datas[0] == file_name) & (datas[6] == category_text)][1] = new_template_content
+            datas.loc[num, 2] = new_label
+            datas.loc[(datas[0] == file_name) & (datas[6] == category_text), 1] = new_template_content
         if not (num == 0 or pandas.isna(new_segment_content)):
             datas.loc[num][3] = new_segment_content
+
+    return datas
+
+
+def get_package_infos():
+    """
+    获取完整的package信息
+    :return:
+    {
+    file_name: {
+        template_type: {
+            'segments': {
+                label: segment,
+                label: segment,
+            },
+            'template_content': '<b>婚育史：{婚}，{育}。'
+            }
+        },
+        'PRESENT': 'feature'
+    }
+    """
+    package_infos = {}
+
+    # 先获取原始的Excel数据
+    datas = get_check_file_datas()
 
     # 第二次，拼接json
     valid_files = set()
