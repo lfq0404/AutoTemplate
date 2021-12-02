@@ -200,9 +200,13 @@ class SentenceExtractBase:
                 color = 'green'
             else:
                 color = 'red'
-        else:
+        elif start_ind == 1:
             # 如果是枚举，默认是橘色
             color = 'orange'
+        elif start_ind == 2:
+            color = 'red'
+        else:
+            raise ValueError('未定义的颜色分类')
 
         return color
 
@@ -576,7 +580,8 @@ class BracketsEnumSentenceExtract(SentenceExtractBase):
         options = list(options)
         # 能进入这里，肯定有左右括号，也肯定有两个bracket_ind
         new_sentence = sentence[:left_bracket_ind + 1] + [[options[0], cons.AG_OPTION]] + sentence[right_bracket_ind:]
-        # 在配置中添加：{'瘀血证': [['瘀血证', '寒湿证', '肾虚证'], 1]}
-        conf.OPTION_MAP[options[0]] = [options, 1]
+        # 在配置中添加：{'瘀血证': [['瘀血证', '寒湿证', '肾虚证'], 2]}
+        sign = 2 if options[0] in conf.POSITIVE_OPTIONS else 1
+        conf.OPTION_MAP[options[0]] = [options, sign]
 
         return new_sentence
