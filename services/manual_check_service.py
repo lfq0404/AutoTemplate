@@ -131,7 +131,6 @@ def _manual_check_package():
     只要不报错即可
     :return:
     """
-    return
     sign = None
     for file in conf.EXTRACT_TEMPLATE_FILES:
         print('file:///Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞金门急诊模板配置/rawTemplates/{}'.format(file))
@@ -163,7 +162,14 @@ def contrast_segments():
     :return:
     """
 
-    def _update_standard(query):
+    def _dataframe_insert(df, i, df_add):
+        # 指定第i行插入一行数据
+        df1 = df.iloc[:i, :]
+        df2 = df.iloc[i:, :]
+        df_new = pd.concat([df1, df_add, df2], ignore_index=True)
+        return df_new
+
+    def _update_standard(standard_datas, query):
         """
         更新标准数据
         :param query:
@@ -176,8 +182,10 @@ def contrast_segments():
             new_query = new_query & (new_datas[i[0]] == i[1])
 
         # 整行替换
-        standard_datas.loc[standard_query] = new_datas.loc[new_query, [0, 1, 2, 3, 4, 5, 6]].values
-        return
+        index = standard_datas.loc[standard_query].index[0]
+        standard_datas = standard_datas.drop(standard_datas[standard_query].index)
+        standard_datas = _dataframe_insert(standard_datas, index, new_datas.loc[new_query, [0, 1, 2, 3, 4, 5, 6]])
+        return standard_datas
 
     if not os.path.exists(cons.EXCEL_STANDARD_FILE_PATH):
         # 如果不存在，则人工校验后，创建文件
@@ -216,7 +224,7 @@ def contrast_segments():
                     print('2、标准的display：{}'.format(standard_display))
                     text = input('若要用最新数据更新标准数据，请输入1：')
                     if text == '1':
-                        _update_standard(query=[
+                        standard_datas = _update_standard(standard_datas, query=[
                             [0, file_name],
                             [6, category_text],
                         ])
@@ -235,7 +243,7 @@ def contrast_segments():
                     print('2、标准的content：{}'.format(standard_content))
                     text = input('若要用最新数据更新标准数据，请输入1：')
                     if text == '1':
-                        _update_standard(query=[
+                        standard_datas = _update_standard(standard_datas, query=[
                             [0, file_name],
                             [6, category_text],
                             [2, label],
@@ -245,7 +253,7 @@ def contrast_segments():
                 print('文件《{}》的 {} 还需要检查，出现了新label'.format(file_name, label))
                 text = input('若要用最新数据更新标准数据，请输入1：')
                 if text == '1':
-                    _update_standard(query=[
+                    standard_datas = _update_standard(standard_datas, query=[
                         [0, file_name],
                         [6, category_text]
                     ])
@@ -280,6 +288,5 @@ def _bug_check(file):
 
 
 if __name__ == '__main__':
-    contrast_segments()
-    # file = '4350100-营养门诊-营养门诊病历(复诊)-门诊病历(复诊).html'
-    # _bug_check(file)
+    file = '4350100-营养门诊-营养门诊病历(复诊)-门诊病历(复诊).html'
+    _bug_check(file)
