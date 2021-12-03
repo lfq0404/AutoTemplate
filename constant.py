@@ -83,6 +83,7 @@ KEY_MESSAGE = 'message'
 # segment的各种value
 VALUE_TYPE_TEXT = 'TEXT'
 VALUE_TYPE_RADIO = 'RADIO'
+VALUE_TYPE_CHECKBOX = 'CHECKBOX'
 VALUE_CUSTOM_TEXT = '自定义文本'
 
 # 原始模板地址

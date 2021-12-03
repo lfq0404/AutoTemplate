@@ -91,12 +91,13 @@ class SentenceExtractBase:
             if last_op:
                 last_op[cons.KEY_DISPLAY] += '{{{}}}'.format(st[cons.KEY_LABEL])
             return st
-        elif st[cons.KEY_TYPE] == cons.VALUE_TYPE_RADIO:
-            return self._get_option_segment(st, last_op)
+        elif st[cons.KEY_TYPE] in [cons.VALUE_TYPE_RADIO, cons.VALUE_TYPE_CHECKBOX]:
+            return self._get_radio_segment(st, last_op)
 
-    def _get_option_segment(self, st, last_op):
+    def _get_radio_segment(self, st, last_op):
         """
-        解析选项类型的segment
+        解析radio选项类型的segment
+        选项与label放在同一层
         :param st: {'display': '{option}侧侧下鼻甲', 'option': '左右双', 'addition': [{'display': '{option}肥大', 'option': '有无'}]}
         :param last_op: 上一层级的option
         :return:
@@ -116,7 +117,7 @@ class SentenceExtractBase:
             for option_text in option_texts:
                 cfg_info = conf.OPTION_MAP.get(option_text)
                 if cfg_info:
-                    option_texts_cfg, start_ind = cfg_info
+                    option_texts_cfg, start_ind, option_type = cfg_info
                     # 只取配置的第一个作为阴性，其余的以解析结果为准，不参考配置信息
                     # 否则“无/I度/II度” 会变成 “无/有/I度/II度”
                     first_option = option_texts_cfg[0]
@@ -126,7 +127,7 @@ class SentenceExtractBase:
                     # 只匹配一次配置即可
                     break
         else:
-            option_texts, start_ind = conf.OPTION_MAP[option]
+            option_texts, start_ind, option_type = conf.OPTION_MAP[option]
 
         for ind, opt in enumerate(option_texts):
             # 判断展示颜色
@@ -226,9 +227,6 @@ class SentenceExtractBase:
             word = sentence.pop(0)
             # option对应的segment
             if word[1] == cons.AG_OPTION:
-                # 如果存在选项，暂时写死为单选
-                st[cons.KEY_TYPE] = cons.VALUE_TYPE_RADIO
-
                 # 保证至少存在option后才有addition
                 if cons.OPTION_FORMAT in display_temp:
                     st[cons.KEY_DISPLAY] = display_temp
@@ -238,6 +236,10 @@ class SentenceExtractBase:
                 else:
                     display_temp += cons.OPTION_FORMAT
                     option_temp = word[0]
+                    # 从配置中确定选择的类型
+                    option_cfg = conf.OPTION_MAP.get(word[0])
+                    st[cons.KEY_TYPE] = option_cfg[2] if option_cfg else cons.VALUE_TYPE_RADIO
+
             # text对应的segment
             # TODO：后续会结合前端进行优化，放在一个segment中
             elif word[1] == cons.AG_TEXT:
@@ -411,7 +413,7 @@ class InfiniteEnumSentenceExtract(SentenceExtractBase):
         child_key = ''.join(enums)
         addtion = [{
             cons.KEY_LABEL: child_key,
-            cons.KEY_TYPE: 'CHECKBOX',
+            cons.KEY_TYPE: cons.VALUE_TYPE_CHECKBOX,
             cons.KEY_VALUE: ['1'],
             cons.KEY_OPTIONS: [{
                 cons.KEY_LABEL: v,
@@ -582,6 +584,6 @@ class BracketsEnumSentenceExtract(SentenceExtractBase):
         new_sentence = sentence[:left_bracket_ind + 1] + [[options[0], cons.AG_OPTION]] + sentence[right_bracket_ind:]
         # 在配置中添加：{'瘀血证': [['瘀血证', '寒湿证', '肾虚证'], 2]}
         sign = 2 if options[0] in conf.POSITIVE_OPTIONS else 1
-        conf.OPTION_MAP[options[0]] = [options, sign]
+        conf.OPTION_MAP[options[0]] = [options, sign, cons.VALUE_TYPE_RADIO]
 
         return new_sentence
