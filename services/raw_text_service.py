@@ -41,8 +41,6 @@ class RawTextExtractBase:
         # 默认以句号进行分句
         blocks = self._get_blocks_by_text(paragraph_text)
 
-        blocks = [i for i in blocks if i.strip()]
-
         return blocks
 
     def _get_blocks_by_text(self, paragraph_text):
