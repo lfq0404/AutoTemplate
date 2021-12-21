@@ -88,6 +88,7 @@ VALUE_CUSTOM_TEXT = '自定义文本'
 
 # 原始模板地址
 RAW_TEMPLATES_PATH = '/Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞金门急诊模板配置/rawTemplates'
+BOOK_RAW_PATH = '{}/pdf2text/bookTextsManual'.format(BASE_PATH)
 # 输出的Excel
 EXCEL_FILE_PATH = '{}/rj_templates.xlsx'.format(BASE_PATH)
 EXCEL_CHECK_FILE_PATH = '{}/rj_check_templates.xlsx'.format(BASE_PATH)
