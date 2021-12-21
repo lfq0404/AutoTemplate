@@ -9,7 +9,7 @@ import os
 import services.excel2mysql as excel2mysql
 import constant as cons
 
-from services.extract_core import ExtractCore, BookExtractCore
+from services.extract_core import ExtractCore
 from services.manual_check_service import check_recent_segments, contrast_segments
 from services.pandas2excel import record2excel
 
