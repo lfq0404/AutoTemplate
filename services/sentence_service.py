@@ -74,6 +74,8 @@ class SentenceExtractBase:
 
         # 获取最终的segment
         for segment_temp in segment_temps:
+            if segment_temp.get('display') == '{option}':
+                continue
             segment = self._get_segment(segment_temp, {})
             display = '{{{}}}'.format(segment[cons.KEY_LABEL])
             segments.append((segment, before_punctuation, after_punctuation, sentence_text, display))

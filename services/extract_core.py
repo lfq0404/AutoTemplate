@@ -244,30 +244,6 @@ class BookExtractCore:
                         paragraph_display += '{}{}{}'.format(before_punctuation, display, after_punctuation)
                         if segment:
                             segments.append([segment, sentence_text])
-        # # 遍历各种史，提取信息
-        # for type_name, paragraph_text in self.paragraphs():
-        #     paragraph_display = ''  # 既往史：{鼻腔}。{鼻中隔}。{间接鼻咽镜检查}。
-        #     segments = []
-        #     # 粗分句，且针对特殊内容预处理
-        #     blocks = get_raw_text_extract_instance(type_name, paragraph_text).extract_blocks()
-        #     for block in blocks:
-        #         # 精分句，拆分成具有完整语义的句子
-        #         sentences = get_block_extract_instance(block).extract_sentences()
-        #         for sentence in sentences:
-        #             # 通过sentence获取segment，及前后标点符号
-        #             sgmts = get_sentence_extract_instance(sentence).extract_segments()
-        #             for sgmt in sgmts:
-        #                 # 拼接segments
-        #                 segment, before_punctuation, after_punctuation, sentence_text, display = sgmt
-        #                 paragraph_display += '{}{}{}'.format(before_punctuation, display, after_punctuation)
-        #                 if segment:
-        #                     segments.append([segment, sentence_text])
-
-        # paragraph_display = '<b>{}：{}</b>'.format(type_name, paragraph_display)
-        # print(paragraph_display)
-        # print(json.dumps(segments, ensure_ascii=False))
-        # print()
-        # result.append([self.file_name, paragraph_display, segments, paragraph_text])
 
         return result
 
@@ -279,3 +255,19 @@ class BookExtractCore:
         # 如果文件不是以HTML结尾，则忽略
         if not re.findall('.*txt$', self.file_name):
             return True
+
+
+class RJExtract(ExtractCore):
+    def __init__(self, path, file_name, bath_templates):
+        super(RJExtract, self).__init__(path, file_name)
+        self.bath_templates = bath_templates
+
+    def is_continue(self):
+        """
+        是否继续下一个文件（跳过该文件）
+        :return:
+        """
+        if self.file_name not in self.bath_templates:
+            return True
+
+        return False

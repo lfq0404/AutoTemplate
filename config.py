@@ -95,6 +95,20 @@ JIEBA_USER_DICTS = [
     ['导管是否完整', DEFAULT_FREQUENCY, 'n'],
     ['阻生', DEFAULT_FREQUENCY, 'n'],
     ['废用', DEFAULT_FREQUENCY, 'n'],
+    ['弥漫性充血', DEFAULT_FREQUENCY, 'n'],
+    ['mg/L', DEFAULT_FREQUENCY, 'n'],
+    ['IU/L', DEFAULT_FREQUENCY, 'n'],
+    ['umol/l', DEFAULT_FREQUENCY, 'n'],
+    ['g/l', DEFAULT_FREQUENCY, 'n'],
+    ['mmol/L', DEFAULT_FREQUENCY, 'n'],
+    ['充血红肿', DEFAULT_FREQUENCY, 'n'],
+    ['风寒阻络证', DEFAULT_FREQUENCY, 'n'],
+    ['湿热内蕴证', DEFAULT_FREQUENCY, 'n'],
+    ['气血亏虚证', DEFAULT_FREQUENCY, 'n'],
+    ['湿热浸淫证', DEFAULT_FREQUENCY, 'n'],
+    ['脾虚湿盛证', DEFAULT_FREQUENCY, 'n'],
+    ['血虚风燥证', DEFAULT_FREQUENCY, 'n'],
+    ['胃苓汤或参苓白术散', DEFAULT_FREQUENCY, 'n'],
 
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['港体及导管处皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
@@ -121,6 +135,10 @@ JIEBA_USER_DICTS = [
     ['明显红肿', DEFAULT_FREQUENCY * 10, 'n'],
     ['氯双', DEFAULT_FREQUENCY * 10, 'n'],
     ['肩峰下缘', DEFAULT_FREQUENCY * 10, 'n'],
+    ['少神', DEFAULT_FREQUENCY * 10, 'n'],
+    ['行动自如', DEFAULT_FREQUENCY * 10, 'n'],
+    ['行动欠佳', DEFAULT_FREQUENCY * 10, 'n'],
+    ['细软无力', DEFAULT_FREQUENCY * 10, 'n'],
 
     ['时间', DEFAULT_FREQUENCY // 10, 'text'],
     ['[0]', DEFAULT_FREQUENCY, 'text'],
@@ -199,7 +217,17 @@ JIEBA_USER_DICTS = [
     ['减轻', DEFAULT_FREQUENCY, 'option'],
     ['不能', DEFAULT_FREQUENCY, 'option'],
     ['减弱', DEFAULT_FREQUENCY, 'option'],
+    ['变窄', DEFAULT_FREQUENCY, 'option'],
+    ['清晰', DEFAULT_FREQUENCY, 'option'],
+    ['居中', DEFAULT_FREQUENCY, 'option'],
     ['明显', DEFAULT_FREQUENCY // 10, 'option'],
+    ['无红肿', DEFAULT_FREQUENCY, 'option'],
+    ['表面见', DEFAULT_FREQUENCY, 'option'],
+    ['薄白', DEFAULT_FREQUENCY, 'option'],
+    ['否认', DEFAULT_FREQUENCY, 'option'],
+    ['如常', DEFAULT_FREQUENCY, 'option'],
+    ['柔软灵活', DEFAULT_FREQUENCY, 'option'],
+    ['弦滑', DEFAULT_FREQUENCY, 'option'],
 ]
 # 自定义词组存在的词
 JIEBA_USER_WORDS = [i[0] for i in JIEBA_USER_DICTS]
@@ -280,6 +308,7 @@ OPTION_MAP = {
     '多': [['少', '多'], 0, cons.VALUE_TYPE_RADIO],
     '双侧上': [['双侧上', '双侧下', '左侧下', '左侧上', '右侧下', '右侧上'], 1, cons.VALUE_TYPE_RADIO],
     '红肿': [['正常', '红肿'], 0, cons.VALUE_TYPE_RADIO],
+    '无红肿': [['无红肿', '红肿'], 0, cons.VALUE_TYPE_RADIO],
     '透明': [['透明', '云翳', '斑翳'], 0, cons.VALUE_TYPE_RADIO],
     '圆': [['圆', '欠圆'], 0, cons.VALUE_TYPE_RADIO],
     '+/-': [['-', '+'], 0, cons.VALUE_TYPE_RADIO],
@@ -293,10 +322,20 @@ OPTION_MAP = {
     '阻生': [['阻生', '废用'], 0, cons.VALUE_TYPE_RADIO],
     '明显': [['不明显', '明显'], 0, cons.VALUE_TYPE_RADIO],
     '减弱': [['正常', '减弱', '增强'], 0, cons.VALUE_TYPE_RADIO],
+    '膨隆': [['正常', '膨隆', '凹陷'], 0, cons.VALUE_TYPE_RADIO],
+    '变窄': [['正常', '变窄', '变宽'], 0, cons.VALUE_TYPE_RADIO],
+    '清晰': [['清晰'], 0, cons.VALUE_TYPE_RADIO],
+    '居中': [['居中', '偏左', '偏右'], 0, cons.VALUE_TYPE_RADIO],
+    '表面见': [['表面未见', '表面见'], 0, cons.VALUE_TYPE_RADIO],
+    '薄白': [['薄白', '厚白'], 0, cons.VALUE_TYPE_RADIO],
+    '否认': [['否认', '有'], 0, cons.VALUE_TYPE_RADIO],
+    '如常': [['如常'], 0, cons.VALUE_TYPE_RADIO],
+    '柔软灵活': [['柔软灵活', '僵硬'], 0, cons.VALUE_TYPE_RADIO],
+    '弦滑': [['弦滑', '滑数'], 0, cons.VALUE_TYPE_RADIO],
 }
 
 # 全为阳性的选项
-POSITIVE_OPTIONS = {'寒湿证', '肾虚证', '瘀血证'}
+POSITIVE_OPTIONS = {'寒湿证', '肾虚证', '瘀血证', '风寒阻络证', '湿热内蕴证', '气血亏虚证', '湿热浸淫证', '脾虚湿盛证', '血虚风燥证'}
 
 # 针对OPTION_MAP拆解的词，作用在display中会有特殊的展示
 SPECIAL_OPTION_DISPLAY = {
@@ -495,8 +534,12 @@ PRE_TREATMENT_CFG = [
         'repl': '',
     },
     {
-        'pat': '[有|无]烟酒',
-        'repl': '有无烟、酒',
+        'pat': '吸烟.*饮酒',
+        'repl': '烟酒',
+    },
+    {
+        'pat': '[有无]+烟酒.*',
+        'repl': '有无烟、酒等不良嗜好',
     },
     {
         'pat': 'PORT导管通畅',
@@ -511,7 +554,7 @@ PRE_TREATMENT_CFG = [
         'repl': '：冲管/未冲管',
     },
     {
-        'pat': '压痛及反跳痛',
+        'pat': '压痛[、及]反跳痛',
         'repl': '压痛、反跳痛等',
     },
     {
@@ -620,7 +663,7 @@ PRE_TREATMENT_CFG = [
     },
 
     {
-        'pat': '(?<=(穿刺点及周围皮肤情况|导管评估|肝素封管|更换接头|更换敷料|穿刺点及周围皮肤处理|拔管依据|拔管过程)：)([a-zA-Z\u4e00-\u9fa5 ]+)',
+        'pat': '(?<=(穿刺点及周围皮肤情况|导管评估|肝素封管|更换接头|更换敷料|穿刺点及周围皮肤处理|拔管依据|拔管过程|宫颈)：)([a-zA-Z\u4e00-\u9fa5 ]+)',
         'repl': '输入'
     },
     {
@@ -710,6 +753,64 @@ PRE_TREATMENT_CFG = [
         'pat': '(（\+）|（\-）)(?![{}])'.format(zh_punc),
         'repl': r'\1，'
     },
+    {
+        # 口淡不渴，或渴喜热饮
+        'pat': '，或',
+        'repl': '或'
+    },
+    {
+        'pat': '弥漫性充血，肿胀',
+        'repl': '弥漫性充血/肿胀'
+    },
+    {
+        'pat': '外耳道内有稀薄',
+        'repl': '外耳道内有无稀薄'
+    },
+    {
+        # 将以下文字删除
+        'pat': '(具体情况，部位|/\s*$)',
+        'repl': ''
+    },
+    {
+        'pat': '部位有/无',
+        'repl': '有/无'
+    },
+    {
+        'pat': '皮疹，症状',
+        'repl': '皮疹'
+    },
+    {
+        'pat': '明显受限C5-7',
+        'repl': '明显受限，C5-7'
+    },
+    {
+        'pat': '宫体：宫体位置',
+        'repl': '宫体：输入'
+    },
+    {
+        'pat': '（—）',
+        'repl': '（-）'
+    },
+    {
+        'pat': '(日期)',
+        'repl': '(输入)'
+    },
+    {
+        'pat': '，充血红肿，',
+        'repl': '，有无充血红肿，'
+    },
+    {
+        'pat': 'G输入P输入',
+        'repl': 'G输入，P输入'
+    },
+    {
+        'pat': '1.湿热浸淫证2.脾虚湿盛证3.血虚风燥证',
+        'repl': '湿热浸淫证/脾虚湿盛证/血虚风燥证'
+    },
+    {
+        'pat': '左寸口弦滑，右寸口滑数',
+        'repl': '左寸口弦滑'
+    },
 
 ]
 _ENUM_DISEASES = ['高血压', '脑梗塞', '糖尿病', '哮喘病', '心脏病']
@@ -752,6 +853,11 @@ DISPLAY_SENTENCE_TEXTS = [
     '四诊摘要：',
     '今去封，扩根至40#，测根长，氯双及NS冲洗，吸干，',
     '2、 维护情况：',
+    '压框等疼痛刺激反应',
+    '如有明显不适及时来院就诊',
+    '减量或停药',
+    '未发现明显异常',
+    ' 1.龙胆泻心汤合五味消毒饮加减2.除湿胃苓汤或参苓白术散加减3.当归引子加减',
 ]
 
 # 当遇到以下内容，需要临时调整jieba自定义词组

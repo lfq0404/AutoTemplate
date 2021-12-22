@@ -478,7 +478,7 @@ def add_excel():
                   '4270000-门诊针灸科-门诊病历(复诊)-肩关节痛-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-肩关节痛-门诊病历(初诊).html'],
                   '4270000-门诊针灸科-门诊病历(复诊)-周围性面瘫-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-周围性面瘫-门诊病历(初诊).html'],
                   '4270000-门诊针灸科-门诊病历(复诊)-膝关节痛-门诊病历(复诊).html': ['4270000-门诊针灸科-门诊病历(初诊)-膝关节痛-门诊病历(初诊).html']}
-    df = read_excel('/Users/jeremy.li/Basebit/Projects/AutoTemplate/近1年门诊常用科室模板与disease.xlsx', 'Sheet1')
+    df = read_excel('/tasks/templates1/近1年门诊常用科室模板与disease.xlsx', 'Sheet1')
     print(df.loc[df[9] >= 100][2].values)
     for exists, adds in add_result.items():
         department_code, department, num, icd, disease_name, remark = \

@@ -12,7 +12,14 @@ import more_itertools as mit
 import constant as cons
 
 
-def record2excel(file_name, datas):
+def record2excel(file_name, datas, excel_check_file_path):
+    """
+    将解析的数据放在Excel中
+    :param file_name: 供工人查看的Excel
+    :param datas:
+    :param excel_check_file_path: 供后续程序读取的Excel路径
+    :return:
+    """
     file_col = []
     display_col = []
     type_col = []  # 用于展示属于什么史
@@ -23,7 +30,7 @@ def record2excel(file_name, datas):
     new_label_col = []
     new_content_col = []
     for file, paragraph_display, segments, raw_text in datas:
-        type_name,display = re.findall('<b>(.*?)[:：]([\s\S]*?)</b>', paragraph_display)[0]
+        type_name, display = re.findall('<b>(.*?)[:：]([\s\S]*?)</b>', paragraph_display)[0]
         if segments:
             for segment, sentence_text in segments:
                 file_col.append(file)
@@ -74,7 +81,7 @@ def record2excel(file_name, datas):
 
     ]
     # 用于校验的
-    df.to_excel(cons.EXCEL_CHECK_FILE_PATH, sheet_name=cons.SHEET_NAME, index=False)
+    df.to_excel(excel_check_file_path, sheet_name=cons.SHEET_NAME, index=False)
     # 用于查看的
     writer = pd.ExcelWriter(file_name, engine='xlsxwriter')
     df.to_excel(writer, sheet_name=cons.SHEET_NAME, index=False)

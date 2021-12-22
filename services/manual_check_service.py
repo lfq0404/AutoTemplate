@@ -13,7 +13,6 @@ import numpy as np
 import constant as cons
 import config as conf
 from myUtils import read_excel
-from services.excel2mysql import get_check_file_datas  # 不太规范，后面再调整
 
 
 def check_recent_segments():

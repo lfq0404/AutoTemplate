@@ -86,15 +86,9 @@ VALUE_TYPE_RADIO = 'RADIO'
 VALUE_TYPE_CHECKBOX = 'CHECKBOX'
 VALUE_CUSTOM_TEXT = '自定义文本'
 
-# 原始模板地址
-RAW_TEMPLATES_PATH = '/Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞金门急诊模板配置/rawTemplates'
+# 人工判读后的标准数据
+EXCEL_STANDARD_FILE_PATH = '{}/rj_standard_templates.xlsx'.format(BASE_PATH)
 BOOK_RAW_PATH = '{}/pdf2text/bookTextsManual'.format(BASE_PATH)
-# 输出的Excel
-EXCEL_FILE_PATH = '{}/rj_templates.xlsx'.format(BASE_PATH)
-EXCEL_CHECK_FILE_PATH = '{}/rj_check_templates.xlsx'.format(BASE_PATH)
-EXCEL_STANDARD_FILE_PATH = '{}/rj_standard_templates.xlsx'.format(BASE_PATH)  # 人工判读后的标准数据
-PRESENT_FILE_PATH = '{}/现病史解析记录.xlsx'.format(BASE_PATH)
-TEMPLATE_DISEASE_FILE_PATH = '{}/近1年门诊常用科室模板与disease.xlsx'.format(BASE_PATH)
 SHEET_NAME = '模板'
 
 # DB配置
@@ -107,4 +101,3 @@ HOST = 'localhost'
 USER = 'root'
 PASSWORD = 'a5300328'
 DB_NAME = 'aiwizard_test'
-

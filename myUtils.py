@@ -31,7 +31,7 @@ def department_statistics():
     根据科室进行统计
     :return:
     """
-    datas = read_excel(cons.EXCEL_FILE_PATH, cons.SHEET_NAME)
+    datas = read_excel(cons.EXCEL_RESULT_FOR_LOOK_PATH, cons.SHEET_NAME)
     result = {}
     files = set()
     for line in datas.itertuples():

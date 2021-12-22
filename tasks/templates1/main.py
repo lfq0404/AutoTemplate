@@ -7,11 +7,11 @@
 import os
 
 import services.excel2mysql as excel2mysql
-import constant as cons
 
-from services.extract_core import ExtractCore, BookExtractCore
+from services.extract_core import ExtractCore
 from services.manual_check_service import check_recent_segments, contrast_segments
 from services.pandas2excel import record2excel
+import tasks.templates1.task_constant as cons
 
 
 def code_extract():
@@ -51,7 +51,7 @@ def main():
         # 提取信息
         datas = code_extract()
         # 保存到Excel中
-        record2excel(cons.EXCEL_FILE_PATH, datas)
+        record2excel(cons.EXCEL_RESULT_FOR_LOOK_PATH, datas, cons.EXCEL_RESULT_FOR_CHECK_PATH)
     elif reload == 'n':
         pass
     else:
