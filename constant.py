@@ -87,7 +87,6 @@ VALUE_TYPE_CHECKBOX = 'CHECKBOX'
 VALUE_CUSTOM_TEXT = '自定义文本'
 
 # 人工判读后的标准数据
-EXCEL_STANDARD_FILE_PATH = '{}/rj_standard_templates.xlsx'.format(BASE_PATH)
 BOOK_RAW_PATH = '{}/pdf2text/bookTextsManual'.format(BASE_PATH)
 SHEET_NAME = '模板'
 

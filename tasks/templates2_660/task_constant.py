@@ -12,10 +12,10 @@ TEMPLATE_PATH = '/Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞�
 TASK_PATH = '{}/tasks/templates2_660'.format(BASE_PATH)
 
 # 输出的Excel
-EXCEL_RESULT_FOR_LOOK_PATH = '{}/rj_templates.xlsx'.format(TASK_PATH)
-EXCEL_RESULT_FOR_CHECK_PATH = '{}/rj_check_templates.xlsx'.format(TASK_PATH)
+EXCEL_RESULT_FOR_CHECK_PATH = '{}/result_for_check_templates.xlsx'.format(TASK_PATH)
 PRESENT_FILE_PATH = '{}/现病史解析记录.xlsx'.format(TASK_PATH)
 TEMPLATE_DISEASE_FILE_PATH = '{}/近1年门诊常用科室模板与disease.xlsx'.format(TASK_PATH)
+EXCEL_STANDARD_FILE_PATH = '{}/standard_templates.xlsx'.format(TASK_PATH)
 
 TEMPLATE_BATCHES = {
     1: ['门诊病历(初诊)-外耳道炎(4250100)门诊病历(初诊)2ce86d8b-47ba-47f3-9764-621f32332e3d.html',

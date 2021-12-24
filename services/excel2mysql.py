@@ -20,7 +20,7 @@ from pymysql.converters import escape_string
 import constant as cons
 import config as conf
 
-from myUtils import read_excel
+from myUtils import read_excel, get_check_file_datas
 
 # 114中，瑞金的机构信息，正式部署的时候不会用到该值
 rj_organization_code = '00000002'
@@ -81,43 +81,6 @@ class Excel2Mysql:
 
         return package_diseases_map
 
-    def get_check_file_datas(self):
-        """
-        获取check_templates.xlsx的data，主要是合并new_label与new_content
-        :return:
-        """
-        datas = read_excel(self.excel_check_file_path, cons.SHEET_NAME)
-
-        # 先根据new_label修改template_content
-        for num, line in enumerate(datas.itertuples()):
-            file_name = line._1
-            if type(file_name) is int:
-                continue
-            template_content = line._2
-            label = line._3
-            segment_content = line._4
-            category_text = line._7
-            new_label = line._8
-            new_segment_content = line._9
-
-            if new_label == 'delete':
-                datas.loc[num][0:8] = ''
-            if not pandas.isna(new_label) and pandas.isna(new_segment_content):
-                # 如果有new_label，并且没有new_content
-                # 则替换content的label为new_label
-                segment_content = re.sub('(?<=^\{"label": ")(.+?)(?=")', new_label, segment_content)
-
-            if not (num == 0 or pandas.isna(new_label) or pandas.isna(segment_content) or '{' not in segment_content
-                    or new_label == 'delete'):
-                # 更新template_content中的label
-                new_template_content = template_content.replace(label, new_label)
-                datas.loc[num, 2] = new_label
-                datas.loc[(datas[0] == file_name) & (datas[6] == category_text), 1] = new_template_content
-            if not (num == 0 or pandas.isna(new_segment_content)):
-                datas.loc[num][3] = new_segment_content
-
-        return datas
-
     def get_package_infos(self):
         """
         获取完整的package信息
@@ -138,7 +101,7 @@ class Excel2Mysql:
         package_infos = {}
 
         # 先获取原始的Excel数据
-        datas = self.get_check_file_datas()
+        datas = get_check_file_datas(self.excel_check_file_path)
 
         # 第二次，拼接json
         valid_files = set()

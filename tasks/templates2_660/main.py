@@ -6,8 +6,9 @@
 # @Description:
 import os
 
+from myUtils import read_excel
 from services.extract_core import RJExtract
-from services.manual_check_service import check_recent_segments, contrast_segments
+from services.manual_check_service import ManualCheck
 from services.pandas2excel import record2excel
 import tasks.templates2_660.task_constant as cons
 
@@ -42,22 +43,28 @@ def main(batch):
     3、数据入库
     :return:
     """
-    # reload = input('是否重新根据原始模板提取（y or n）：')
-    reload = 'y'
+    reload = input('是否重新根据原始模板提取（y or n）：')
+    # reload = 'y'
     if reload == 'y':
         # 提取信息
         datas = code_extract(batch)
         # 保存到Excel中
-        record2excel(cons.EXCEL_RESULT_FOR_LOOK_PATH, datas, cons.EXCEL_RESULT_FOR_CHECK_PATH)
+        record2excel(cons.EXCEL_RESULT_FOR_CHECK_PATH, datas)
+        raise ValueError('\n可查看{}查看效果，并修改。\n完成后，请在此运行，且reload=n'.format(cons.EXCEL_RESULT_FOR_CHECK_PATH))
     elif reload == 'n':
         pass
     else:
         raise ValueError('请输入正确的指令')
 
-    # # 人工校验本次提取结果
-    # check_recent_segments()
-    # # 与之前的结果进行对比
-    # contrast_segments()
+    # 人工校验本次提取结果
+    manual_check = ManualCheck(
+        cons.EXCEL_RESULT_FOR_CHECK_PATH,
+        cons.TEMPLATE_BATCHES[batch],
+        cons.EXCEL_STANDARD_FILE_PATH
+    )
+    manual_check.check_recent_segments()
+    # 与之前的结果进行对比
+    manual_check.contrast_segments()
     # # 数据入库
     # excel2mysql.main()
 

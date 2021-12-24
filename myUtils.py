@@ -63,7 +63,7 @@ def department_statistics():
     print(result)
 
 
-def reverse_delete_sqls():
+def _reverse_delete_sqls():
     """
     将SQL顺序反转打印
     """
@@ -75,3 +75,41 @@ delete from department_mapping where id = 505;
     for sql in sqls[::-1]:
         if sql:
             print(sql.replace('\n', ''), ';')
+
+
+def get_check_file_datas(excel_check_file_path):
+    """
+    获取check_templates.xlsx的data，主要是合并new_label与new_content
+    :return:
+    """
+    datas = read_excel(excel_check_file_path, cons.SHEET_NAME)
+
+    # 先根据new_label修改template_content
+    for num, line in enumerate(datas.itertuples()):
+        file_name = line._1
+        if type(file_name) is int:
+            continue
+        template_content = line._2
+        label = line._3
+        segment_content = line._4
+        category_text = line._7
+        new_label = line._8
+        new_segment_content = line._9
+
+        if new_label == 'delete':
+            datas.loc[num][0:8] = ''
+        if not pandas.isna(new_label) and pandas.isna(new_segment_content):
+            # 如果有new_label，并且没有new_content
+            # 则替换content的label为new_label
+            segment_content = re.sub('(?<=^\{"label": ")(.+?)(?=")', new_label, segment_content)
+
+        if not (num == 0 or pandas.isna(new_label) or pandas.isna(segment_content) or '{' not in segment_content
+                or new_label == 'delete'):
+            # 更新template_content中的label
+            new_template_content = template_content.replace(label, new_label)
+            datas.loc[num, 2] = new_label
+            datas.loc[(datas[0] == file_name) & (datas[6] == category_text), 1] = new_template_content
+        if not (num == 0 or pandas.isna(new_segment_content)):
+            datas.loc[num][3] = new_segment_content
+
+    return datas

@@ -6,10 +6,9 @@
 # @Description:
 import os
 
-import services.excel2mysql as excel2mysql
-
+from services.excel2mysql import Excel2Mysql
 from services.extract_core import ExtractCore
-from services.manual_check_service import check_recent_segments, contrast_segments
+from services.manual_check_service import ManualCheck
 from services.pandas2excel import record2excel
 import tasks.templates1.task_constant as cons
 
@@ -51,18 +50,26 @@ def main():
         # 提取信息
         datas = code_extract()
         # 保存到Excel中
-        record2excel(cons.EXCEL_RESULT_FOR_LOOK_PATH, datas, cons.EXCEL_RESULT_FOR_CHECK_PATH)
+        record2excel(cons.EXCEL_RESULT_FOR_CHECK_PATH, datas)
     elif reload == 'n':
         pass
     else:
         raise ValueError('请输入正确的指令')
 
     # 人工校验本次提取结果
-    check_recent_segments()
+    manual_check = ManualCheck(
+        cons.EXCEL_RESULT_FOR_CHECK_PATH,
+        cons.EXTRACT_TEMPLATE_FILES,
+        cons.EXCEL_STANDARD_FILE_PATH)
+    manual_check.check_recent_segments()
     # 与之前的结果进行对比
-    contrast_segments()
+    manual_check.contrast_segments()
     # 数据入库
-    excel2mysql.main()
+    Excel2Mysql(
+        cons.TEMPLATE_DISEASE_FILE_PATH,
+        cons.EXCEL_RESULT_FOR_CHECK_PATH,
+        cons.PRESENT_FILE_PATH
+    ).main()
 
 
 if __name__ == '__main__':

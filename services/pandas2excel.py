@@ -12,12 +12,11 @@ import more_itertools as mit
 import constant as cons
 
 
-def record2excel(file_name, datas, excel_check_file_path):
+def record2excel(excel_check_file_path, datas):
     """
     将解析的数据放在Excel中
-    :param file_name: 供工人查看的Excel
-    :param datas:
     :param excel_check_file_path: 供后续程序读取的Excel路径
+    :param datas:
     :return:
     """
     file_col = []
@@ -80,10 +79,10 @@ def record2excel(file_name, datas, excel_check_file_path):
         },
 
     ]
-    # 用于校验的
-    df.to_excel(excel_check_file_path, sheet_name=cons.SHEET_NAME, index=False)
+    # # 用于校验的
+    # df.to_excel(excel_check_file_path, sheet_name=cons.SHEET_NAME, index=False)
     # 用于查看的
-    writer = pd.ExcelWriter(file_name, engine='xlsxwriter')
+    writer = pd.ExcelWriter(excel_check_file_path, engine='xlsxwriter')
     df.to_excel(writer, sheet_name=cons.SHEET_NAME, index=False)
     workbook = writer.book
     worksheet = writer.sheets[cons.SHEET_NAME]
