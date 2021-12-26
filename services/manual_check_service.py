@@ -7,16 +7,17 @@
 import json
 import os
 import re
+
+import pandas
 import pandas as pd
-import numpy as np
 
 import constant as cons
-import config as conf
 from myUtils import read_excel, get_check_file_datas
 
 
 class ManualCheck:
-    def __init__(self, excel_result_for_check_path, extract_template_files, standard_file_path):
+    def __init__(self, excel_result_for_check_path, extract_template_files, standard_file_path,
+                 template_disease_file_path):
         """
         :param excel_result_for_check_path: 前一步生成check_templates.xlsx的路径
         :param extract_template_files: 需要解析的文件名，传空则所有
@@ -25,6 +26,8 @@ class ManualCheck:
         self.excel_result_for_check_path = excel_result_for_check_path
         self.extract_template_files = extract_template_files
         self.standard_file_path = standard_file_path
+        self.show_html_path = '{}/services/aiwizard.html'.format(cons.BASE_PATH)
+        self.template_disease_file_path = template_disease_file_path
 
     def check_recent_segments(self):
         """
@@ -160,14 +163,19 @@ class ManualCheck:
         standard_datas = self._dataframe_insert(standard_datas, index, new_datas.loc[new_query, [0, 1, 2, 3, 4, 5, 6]])
         return standard_datas
 
-    def contrast_segments(self):
+    def contrast_segments(self, e2m):
         """
         对比最新数据与人工判读后的准确数据做对比，如果不一致，则需要人工介入
+        :param e2m: excel2mysql的instance
         :return:
         """
 
         if not os.path.exists(self.standard_file_path):
-            # 如果不存在，则人工校验后，创建文件
+            # 走此处都是本地调试，需要验证是否为本地环境
+            if not e2m.db_localhost():
+                raise ValueError('危险，不要乱整')
+            # 如果不存在，则先入库，再人工校验，之后创建文件
+            e2m.excel2mysql()
             self._manual_check_package()
             datas = get_check_file_datas(self.excel_result_for_check_path)
             datas[[0, 1, 2, 3, 4, 5, 6]].to_excel(self.standard_file_path, sheet_name=cons.SHEET_NAME,
@@ -259,23 +267,27 @@ class ManualCheck:
         :return:
         """
         sign = None
-        for file in self.extract_template_files:
-            # print('file:///Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞金门急诊模板配置/rawTemplates/{}'.format(file))
-            department_code = int(re.findall('(\d+)-', file)[0])
-            if '初诊' in file:
+        datas = read_excel(self.template_disease_file_path, 'Sheet1')
+        for line in datas.itertuples():
+            file_name = line._3
+            if pandas.isna(file_name) or '-' not in file_name or file_name not in self.extract_template_files:
+                continue
+            depart_code = line._4
+            print('开始校验：{}'.format(file_name))
+            if '初诊' in file_name:
                 _type = 'INITIAL'
-            elif '复诊' in file:
+            elif '复诊' in file_name:
                 _type = 'SUBSEQUENT'
             else:
                 _type = 'MEDICINE'
 
-            with open('aiwizard.html', 'r') as f:
+            with open(self.show_html_path, 'r') as f:
                 html = f.read()
-            html = re.sub('deptCode: "(\d+)"', 'deptCode: "{}"'.format(department_code), html)
+            html = re.sub('deptCode: "(\d+)"', 'deptCode: "{}"'.format(depart_code), html)
             html = re.sub('tplType: "(.+)"', 'tplType: "{}"'.format(_type), html)
-            with open('aiwizard.html', 'w') as f:
+            with open(self.show_html_path, 'w') as f:
                 f.write(html)
-            print('打开医院提供的原始HTML与aiwizard.html，对比效果')
+            print('打开医院提供的原始HTML与{}，对比效果'.format(self.show_html_path))
             sign = input('如果没有问题，请直接回车；如果有问题，请输入任意字符，并修改代码逻辑')
 
         if sign:

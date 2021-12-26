@@ -22,7 +22,7 @@ def read_excel(file_path, sheet_name):
     :param sheet_name:
     :return:
     """
-    datas = pandas.read_excel(file_path, sheet_name=sheet_name, header=None, engine='openpyxl')
+    datas = pandas.read_excel(file_path, sheet_name=sheet_name, header=None, engine='openpyxl', dtype=str)
     return datas
 
 

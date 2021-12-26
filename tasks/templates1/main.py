@@ -69,7 +69,7 @@ def main():
         cons.TEMPLATE_DISEASE_FILE_PATH,
         cons.EXCEL_RESULT_FOR_CHECK_PATH,
         cons.PRESENT_FILE_PATH
-    ).main()
+    ).excel2mysql()
 
 
 if __name__ == '__main__':

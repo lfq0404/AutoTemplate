@@ -18,7 +18,6 @@ import six
 from pymysql.converters import escape_string
 
 import constant as cons
-import config as conf
 
 from myUtils import read_excel, get_check_file_datas
 
@@ -39,10 +38,11 @@ DELETE_LOGS = []
 
 
 class Excel2Mysql:
-    def __init__(self, template_disease_file_path, excel_check_file_path, present_file_path):
+    def __init__(self, template_disease_file_path, excel_check_file_path, present_file_path, extract_template_files):
         self.template_disease_file_path = template_disease_file_path
         self.excel_check_file_path = excel_check_file_path
         self.present_file_path = present_file_path
+        self.extract_template_files = extract_template_files
 
     def get_package_diseases_map(self):
         """
@@ -56,12 +56,14 @@ class Excel2Mysql:
             file_name = line._3
             if pandas.isna(file_name) or '-' not in file_name:
                 continue
+            depart_code = line._4
             depart_name = line._5
             icd_codes = line._7
             icd_codes = [] if pandas.isna(icd_codes) else icd_codes.split(',')
             disease_names = line._8
             disease_names = [] if pandas.isna(disease_names) else disease_names.split(',')
             remark = line._9
+            conditions = line._10
             is_depart = not pandas.isna(remark)  # 是否是科室通用
             disease_ids = []
             for icd_code in icd_codes:
@@ -73,10 +75,12 @@ class Excel2Mysql:
 
             package_diseases_map[file_name] = {
                 'depart_name': depart_name,
+                'depart_code': depart_code,
                 'icd_codes': icd_codes,
                 'disease_names': disease_names,
                 'disease_ids': disease_ids,  # disease_v2对应的主键id
                 'is_depart': is_depart,
+                'conditions': conditions,  # 扩展信息，年龄、性别限制等
             }
 
         return package_diseases_map
@@ -105,14 +109,14 @@ class Excel2Mysql:
 
         # 第二次，拼接json
         valid_files = set()
-        for num, line in enumerate(datas.itertuples()):
+        for _, line in enumerate(datas.itertuples()):
             file_name = line._1
             template_content = line._2
             label = line._3
             segment_content = line._4
             category_text = line._7
             # template_category = cons.KNOWN_CATEGORY_MAP.get(category_text)
-            if conf.EXTRACT_TEMPLATE_FILES and file_name not in conf.EXTRACT_TEMPLATE_FILES:
+            if self.extract_template_files and file_name not in self.extract_template_files:
                 continue
             if pandas.isna(segment_content):
                 continue
@@ -130,18 +134,18 @@ class Excel2Mysql:
             package_infos[file_name][category_text]['segments'][label] = segment_content
 
         print('无效的文件为：')
-        for i in set(conf.EXTRACT_TEMPLATE_FILES) - valid_files:
+        for i in set(self.extract_template_files) - valid_files:
             print(i)
 
         # 附加现病史的内容
         datas = read_excel(self.present_file_path, '4.现病史可解析')
         # 先根据new_label修改template_content
-        for num, line in enumerate(datas.itertuples()):
+        for _, line in enumerate(datas.itertuples()):
             file_name = line._1
             feature = line._3
             package_info = package_infos.get(file_name)
             if not package_info:
-                if file_name in conf.EXTRACT_TEMPLATE_FILES:
+                if file_name in self.extract_template_files:
                     package_infos[file_name] = {}
                 else:
                     continue
@@ -325,18 +329,21 @@ class Excel2Mysql:
             #     sql = get_insert_sql('package', infos)
             #     package_id = exec_insert_sql(sql)
 
-        def insert_disease_package(disease_id, department_code, package_id, _type):
+        def insert_disease_package(disease_id, department_code, package_id, _type, conditions):
             """
             新建desease_package的映射关系
             :param disease_id:
-            :param department_id:
+            :param department_code:
             :param package_id:
             :param _type:
             :return:
             """
             sql = 'select id from {} where code = {} and org_code = {}'.format('department', department_code,
                                                                                rj_organization_code)
-            cur.execute(sql)
+            try:
+                cur.execute(sql)
+            except:
+                print()
             department = cur.fetchall()
             sql = self.get_insert_sql(
                 'disease_package_v2',
@@ -369,7 +376,8 @@ class Excel2Mysql:
                 print('该模板为空，不入库：{}！！！'.format(file_name))
                 continue
             print('[{}]开始处理：{}'.format(num, file_name))
-            department_code, department_name = self.extract_file_name(file_name)
+            depart_code = disease_info['depart_code']
+            depart_name = disease_info['depart_name']
             if '初诊' in file_name:
                 _type = 'INITIAL'
             elif '复诊' in file_name:
@@ -380,7 +388,7 @@ class Excel2Mysql:
             if disease_info['is_depart']:
                 package_id = insert_package(package_info)
                 # 4.1、通用模板，与virtual_department关联
-                virtual_department_id = departments[department_name]['virtual_department_id']
+                virtual_department_id = departments[depart_name]['virtual_department_id']
                 insert_virtual_department_package(
                     {
                         'virtual_department_id': virtual_department_id,
@@ -388,21 +396,12 @@ class Excel2Mysql:
                         'type': _type
                     })
             else:
+                conditions = None if pandas.isna(disease_info['conditions']) else disease_info['conditions']
                 for disease_id in disease_info['disease_ids']:
                     # 一个疾病对应一个模板
                     package_id = insert_package(package_info)
                     # 4.2、与疾病相关的模板
-                    insert_disease_package(disease_id, department_code, package_id, _type)
-
-    def extract_file_name(self, file_name):
-        """
-        通过file_name，返回department信息
-        :param file_name:
-        :return:
-        """
-        department_code, department = re.findall('(.+?)-(.+?)-', file_name)[0]
-
-        return department_code, department
+                    insert_disease_package(disease_id, depart_code, package_id, _type, conditions)
 
     def init_datas(self):
         """
@@ -416,19 +415,15 @@ class Excel2Mysql:
             }
         }
         """
-        datas = read_excel(self.excel_check_file_path, cons.SHEET_NAME)
-
         departments = {}
-        files = set()
+        datas = read_excel(self.template_disease_file_path, 'Sheet1')
         for line in datas.itertuples():
-            file_name = line._1
-            if type(file_name) is not str or '-' not in file_name:
+            file_name = line._3
+            if pandas.isna(file_name) or '-' not in file_name:
                 continue
-            files.add(file_name)
-        for file_name in files:
-            # 完善department配置
-            department_code, department = self.extract_file_name(file_name)
-            virtual_name = 'rj_{}'.format(department)
+            department_code = line._4
+            depart_name = line._5
+            virtual_name = 'rj_{}'.format(depart_name)
             sql = 'select id from {} where code = {} and org_code = {}'.format('department', department_code,
                                                                                rj_organization_code)
             item = cur.execute(sql)
@@ -438,7 +433,7 @@ class Excel2Mysql:
                     {
                         'org_code': rj_organization_code,
                         'code': department_code,
-                        'name': department
+                        'name': depart_name
                     })
                 department_id = self.exec_insert_sql(sql)
             else:
@@ -467,7 +462,7 @@ class Excel2Mysql:
                 rows = cur.fetchall()
                 virtual_department_id = rows[0][0]
 
-            departments[department] = {
+            departments[depart_name] = {
                 'department_id': department_id,
                 'virtual_department_id': virtual_department_id
             }
@@ -501,7 +496,14 @@ class Excel2Mysql:
                 f.write(line)
                 f.write(';\n')
 
-    def main(self):
+    def db_localhost(self):
+        """
+        判断目前的数据库配置是否为本地
+        :return:
+        """
+        return cons.HOST in ('localhost', '127.0.0.1')
+
+    def excel2mysql(self):
         """
         前提：人工判读完成 get_update_segments 不报错
 
@@ -524,7 +526,3 @@ class Excel2Mysql:
             traceback.print_exc()
         # 记录log
         self.record_delete_log()
-
-
-if __name__ == '__main__':
-    main()

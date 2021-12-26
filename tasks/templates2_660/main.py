@@ -6,7 +6,7 @@
 # @Description:
 import os
 
-from myUtils import read_excel
+from services.excel2mysql import Excel2Mysql
 from services.extract_core import RJExtract
 from services.manual_check_service import ManualCheck
 from services.pandas2excel import record2excel
@@ -43,6 +43,13 @@ def main(batch):
     3、数据入库
     :return:
     """
+    e2m = Excel2Mysql(
+        cons.TEMPLATE_DISEASE_FILE_PATH,
+        cons.EXCEL_RESULT_FOR_CHECK_PATH,
+        cons.PRESENT_FILE_PATH,
+        cons.TEMPLATE_BATCHES[batch],
+    )
+
     reload = input('是否重新根据原始模板提取（y or n）：')
     # reload = 'y'
     if reload == 'y':
@@ -56,17 +63,18 @@ def main(batch):
     else:
         raise ValueError('请输入正确的指令')
 
-    # 人工校验本次提取结果
+    # 人工处理本次自动化提取后，冲突的数据
     manual_check = ManualCheck(
         cons.EXCEL_RESULT_FOR_CHECK_PATH,
         cons.TEMPLATE_BATCHES[batch],
-        cons.EXCEL_STANDARD_FILE_PATH
+        cons.EXCEL_STANDARD_FILE_PATH,
+        cons.TEMPLATE_DISEASE_FILE_PATH
     )
     manual_check.check_recent_segments()
     # 与之前的结果进行对比
-    manual_check.contrast_segments()
-    # # 数据入库
-    # excel2mysql.main()
+    manual_check.contrast_segments(e2m)
+    # 数据入库
+    e2m.excel2mysql()
 
 
 if __name__ == '__main__':

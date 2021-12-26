@@ -52,7 +52,7 @@
           tplType: "INITIAL", // 模板类型 - 初诊：INITIAL, 复诊：SUBSEQUENT, 配药：MEDICINE
           callOperator: "孙XX,123456",
           orgCode: "00000002",
-          deptCode: "4350100",
+          deptCode: "4250100",
           orgPatientId: "1646184620231",
           orgVisitId: "707010491",
           visitStartAt: "2018-12-16 01:17:45",
@@ -108,7 +108,7 @@
       tplType: "INITIAL", // 模板类型 - 初诊：INITIAL, 复诊：SUBSEQUENT, 配药：MEDICINE
       callOperator: "孙XX,123456",
       orgCode: "00000002",
-      deptCode: "4350100",
+      deptCode: "4250100",
       orgPatientId: "1646184620231",
       orgVisitId: "707010491",
       visitStartAt: "2018-12-16 01:17:45",
@@ -168,7 +168,7 @@
 
     $.ajax({
       type: 'POST',
-      url: "http://172.18.0.76:8111/api/v1/template/his/emrs",
+      url: "http://127.0.0.1:5000/api/v1/template/his/emrs",
       data: JSON.stringify(data),
       contentType:'application/json; charset=utf-8',
       success: function(result){

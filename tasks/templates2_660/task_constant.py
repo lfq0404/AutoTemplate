@@ -13,8 +13,8 @@ TASK_PATH = '{}/tasks/templates2_660'.format(BASE_PATH)
 
 # 输出的Excel
 EXCEL_RESULT_FOR_CHECK_PATH = '{}/result_for_check_templates.xlsx'.format(TASK_PATH)
-PRESENT_FILE_PATH = '{}/现病史解析记录.xlsx'.format(TASK_PATH)
-TEMPLATE_DISEASE_FILE_PATH = '{}/近1年门诊常用科室模板与disease.xlsx'.format(TASK_PATH)
+PRESENT_FILE_PATH = '{}/现病史第一批.xlsx'.format(TASK_PATH)
+TEMPLATE_DISEASE_FILE_PATH = '{}/template_disease_map.xlsx'.format(TASK_PATH)
 EXCEL_STANDARD_FILE_PATH = '{}/standard_templates.xlsx'.format(TASK_PATH)
 
 TEMPLATE_BATCHES = {

@@ -118,6 +118,7 @@ JIEBA_USER_DICTS = [
     ['肝脾肋下', DEFAULT_FREQUENCY, 'n'],
     ['活动性', DEFAULT_FREQUENCY, 'n'],
     ['易紧张', DEFAULT_FREQUENCY, 'n'],
+    ['经期暂缓', DEFAULT_FREQUENCY, 'n'],
 
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['港体及导管处皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
@@ -896,7 +897,23 @@ PRE_TREATMENT_CFG = [
         'repl': '过敏史'
     },
     {
+        'pat': '，外伤日期、部位、程度、诊疗结果',
+        'repl': ''
+    },
+    {
+        'pat': '具体因何疾病作何手术，手术日期及手术结果',
+        'repl': ''
+    },
+    {
         'pat': '部位',
+        'repl': ''
+    },
+    {
+        'pat': '发病时间，慢性疾病史类型',
+        'repl': ''
+    },
+    {
+        'pat': '发病时间，传染性疾病史类型',
         'repl': ''
     },
 
