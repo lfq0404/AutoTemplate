@@ -100,6 +100,7 @@ def get_check_file_datas(excel_check_file_path):
             # 如果有new_label，并且没有new_content
             # 则替换content的label为new_label
             segment_content = re.sub('(?<=^\{"label": ")(.+?)(?=")', new_label, segment_content)
+            datas.loc[num][3] = segment_content
 
         if not (num == 0 or pandas.isna(new_label) or pandas.isna(segment_content) or '{' not in segment_content
                 or new_label == 'delete'):

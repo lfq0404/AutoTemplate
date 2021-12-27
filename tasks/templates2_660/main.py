@@ -6,6 +6,7 @@
 # @Description:
 import os
 
+from myUtils import get_check_file_datas
 from services.excel2mysql import Excel2MysqlAppointID
 from services.extract_core import RJExtract
 from services.manual_check_service import ManualCheck
@@ -55,6 +56,7 @@ def main(batch):
         cons.EXCEL_STANDARD_FILE_PATH,
         cons.TEMPLATE_DISEASE_FILE_PATH
     )
+    manual_check.manual_check_package()
 
     reload = input('是否重新根据原始模板提取（y or n）：')
     if reload == 'y':

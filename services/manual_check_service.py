@@ -13,6 +13,7 @@ import pandas as pd
 
 import constant as cons
 from myUtils import read_excel, get_check_file_datas
+from services.excel2mysql import cur
 
 
 class ManualCheck:
@@ -176,7 +177,6 @@ class ManualCheck:
                 raise ValueError('危险，不要乱整')
             # 如果不存在，则先入库，再人工校验，之后创建文件
             e2m.excel2mysql()
-            self.manual_check_package()
             datas = get_check_file_datas(self.excel_result_for_check_path)
             datas[[0, 1, 2, 3, 4, 5, 6]].to_excel(self.standard_file_path, sheet_name=cons.SHEET_NAME,
                                                   index=False,
@@ -266,6 +266,21 @@ class ManualCheck:
         只要不报错即可
         :return:
         """
+        ready = input("""需要准备的事项：
+1、SmartService：
+    1）连接本地数据库
+    2）修改“def diagnose”下的doctor_diagnoses，直接赋值为：doctor_diagnoses = args['diagnosis']
+    3）启动SmartService
+2、smart-frontend
+    1）修改window.smartUri = 'http://localhost:5000/api/v1/'
+    2）安装node版本管理器，并切到node8（可选）：sudo npm install n -g  && n 8.4.0
+    3）安装gulp：npm install gulp@3.9.1
+    4）npm install
+    5）npm run start
+若准备完成，请输入y，否则输入任意后终止程序""")
+        if ready != 'y':
+            raise ValueError('马上去准备')
+
         sign = None
         datas = read_excel(self.template_disease_file_path, 'Sheet1')
         for line in datas.itertuples():
@@ -273,6 +288,16 @@ class ManualCheck:
             if pandas.isna(file_name) or '-' not in file_name or file_name not in self.extract_template_files:
                 continue
             depart_code = line._4
+            icd_code = line._7
+            disease_name = line._8
+            sql = 'select id from {} where code = "{}" and source_id=2 and status=1'.format('disease_v2', icd_code)
+            cur.execute(sql)
+            disease_id = cur.fetchone()
+            if disease_id:
+                disease_id = disease_id[0]
+            else:
+                disease_id = 0
+
             print('开始校验：{}'.format(file_name))
             if '初诊' in file_name:
                 _type = 'INITIAL'
@@ -285,6 +310,9 @@ class ManualCheck:
                 html = f.read()
             html = re.sub('deptCode: "(\d+)"', 'deptCode: "{}"'.format(depart_code), html)
             html = re.sub('tplType: "(.+)"', 'tplType: "{}"'.format(_type), html)
+            html = re.sub('"name": "(.+)"', '"name": "{}"'.format(disease_name), html)
+            html = re.sub('"code": "(.+)"', '"code": "{}"'.format(icd_code), html)
+            html = re.sub('"id": "(.+)"', '"id": "{}"'.format(disease_id), html)
             with open(self.show_html_path, 'w') as f:
                 f.write(html)
             print('打开医院提供的原始HTML与{}，对比效果'.format(self.show_html_path))

@@ -355,6 +355,8 @@ OPTION_MAP = {
     '未闻及': [['未闻及', '闻及'], 0, cons.VALUE_TYPE_RADIO],
     '未闻': [['未闻及', '闻及'], 0, cons.VALUE_TYPE_RADIO],
     '规律': [['规律', '不规律'], 0, cons.VALUE_TYPE_RADIO],
+    '灵敏': [['灵敏', '迟钝'], 0, cons.VALUE_TYPE_RADIO],
+    '迟钝': [['灵敏', '迟钝'], 0, cons.VALUE_TYPE_RADIO],
 }
 
 # 全为阳性的选项
@@ -580,6 +582,10 @@ PRE_TREATMENT_CFG = [
     {
         'pat': '压痛[、及]反跳痛',
         'repl': '压痛、反跳痛等',
+    },
+    {
+        'pat': '压痛[、及]叩击痛',
+        'repl': '压痛、叩击痛等',
     },
     {
         'pat': '左/右下肢足靴区',

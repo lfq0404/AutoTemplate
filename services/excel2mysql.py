@@ -608,7 +608,3 @@ class Excel2MysqlAppointID(Excel2Mysql):
         else:
             pass
         return sql
-
-
-if __name__ == '__main__':
-    Excel2MysqlAppointID(1, 2, 3, 4)

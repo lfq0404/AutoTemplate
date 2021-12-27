@@ -13,22 +13,22 @@
     <button id="submitEMR">2、患者就诊结束后推送医生最后确认保存的患者病历和诊断信息</button>
   </div>
   Iframe: (type=iframe: 网页请求形式；orgCode: 医院id；deptCode：科室id；patientId：患者id； visitId: 就诊id)
-  <!-- <iframe
-    src="http://127.0.0.1:8080/?type=iframe&visitId=707010491&orgCode=00000002&patientId=1646184620231"
-    id="iframepage"
-    width="896px"
-    height="664px"
-    frameborder="0"
-    scrolling="yes"
-  ></iframe> -->
   <iframe
-    src="http://172.18.0.76:8116/?type=iframe&visitId=707010491&orgCode=00000002&patientId=1646184620231"
+    src="http://127.0.0.1:8080/?type=iframe&visitId=707010491&orgCode=00000002&patientId=1646184620231"
     id="iframepage"
     width="896px"
     height="999px"
     frameborder="0"
     scrolling="yes"
   ></iframe>
+<!--  <iframe-->
+<!--    src="http://172.18.0.76:8116/?type=iframe&visitId=707010491&orgCode=00000002&patientId=1646184620231"-->
+<!--    id="iframepage"-->
+<!--    width="896px"-->
+<!--    height="999px"-->
+<!--    frameborder="0"-->
+<!--    scrolling="yes"-->
+<!--  ></iframe>-->
 </body>
 
 <script>
@@ -92,8 +92,9 @@
           },
           diagnosis: [
             {
-                "name": "急性上呼吸道感染",
-                "code": "J06.900"
+                "name": "外耳道炎",
+                "code": "H60.901",
+                "id": "91570",
             }
           ]
         },
@@ -149,8 +150,9 @@
       emr: {
         diagnosis: [
         {
-            "name": "急性上呼吸道感染",
-            "code": "J06.900"
+            "name": "外耳道炎",
+            "code": "H60.901",
+            "id": "91570",
         }
         ],
         complaint: "主诉",
@@ -168,7 +170,8 @@
 
     $.ajax({
       type: 'POST',
-      url: "http://172.18.0.76:8111/api/v1/template/his/emrs",
+      // url: "http://172.18.0.76:8111/api/v1/template/his/emrs",
+      url: "http://localhost:5000/api/v1/template/his/emrs",
       data: JSON.stringify(data),
       contentType:'application/json; charset=utf-8',
       success: function(result){
