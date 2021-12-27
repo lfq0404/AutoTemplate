@@ -176,7 +176,7 @@ class ManualCheck:
                 raise ValueError('危险，不要乱整')
             # 如果不存在，则先入库，再人工校验，之后创建文件
             e2m.excel2mysql()
-            self._manual_check_package()
+            self.manual_check_package()
             datas = get_check_file_datas(self.excel_result_for_check_path)
             datas[[0, 1, 2, 3, 4, 5, 6]].to_excel(self.standard_file_path, sheet_name=cons.SHEET_NAME,
                                                   index=False,
@@ -260,7 +260,7 @@ class ManualCheck:
             if not is_pass:
                 raise ValueError('请修改后重新执行')
 
-    def _manual_check_package(self):
+    def manual_check_package(self):
         """
         人工对最终的package进行校验
         只要不报错即可

@@ -89,8 +89,6 @@ def get_check_file_datas(excel_check_file_path):
         file_name = line._1
         if type(file_name) is int:
             continue
-        template_content = line._2
-        label = line._3
         segment_content = line._4
         category_text = line._7
         new_label = line._8
@@ -106,10 +104,41 @@ def get_check_file_datas(excel_check_file_path):
         if not (num == 0 or pandas.isna(new_label) or pandas.isna(segment_content) or '{' not in segment_content
                 or new_label == 'delete'):
             # 更新template_content中的label
-            new_template_content = template_content.replace(label, new_label)
+            new_template_content = _get_new_template_content(datas, num)
             datas.loc[num, 2] = new_label
             datas.loc[(datas[0] == file_name) & (datas[6] == category_text), 1] = new_template_content
         if not (num == 0 or pandas.isna(new_segment_content)):
             datas.loc[num][3] = new_segment_content
 
     return datas
+
+
+def _get_new_template_content(datas, num):
+    """
+    获取最新的template_content
+    :param datas:
+    :param num:
+    :return:
+    """
+    line = datas.loc[num]
+    template_content = line[1]
+    label = line[2]
+    new_label = line[7]
+
+    if template_content.count('{{{}}}'.format(label)) == 1:
+        return template_content.replace(label, new_label)
+    else:
+        # 如果一个content中有多个同名label，则需要判断顺序
+        # 先看看有没有上一个
+        pre_line = datas.loc[num - 1]
+        if pre_line[1] == template_content:
+            old = re.findall('{{{}.*?{}}}'.format(pre_line[2], label), template_content)[0]
+            # 若前后两个label中同时含有“本行的label”，可能有问题，但概率极小，暂时不管；下一个if也有同样的问题
+            new = old.replace(label, new_label)
+            return template_content.replace(old, new)
+        # 再看有没有下一个
+        next_line = datas.loc[num + 1]
+        if next_line[1] == template_content:
+            old = re.findall('{{{}.*?{}}}'.format(label, next_line[2]), template_content)[0]
+            new = old.replace(label, new_label)
+            return template_content.replace(old, new)

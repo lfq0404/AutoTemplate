@@ -492,7 +492,8 @@ class Excel2Mysql:
         记录delete日志
         :return:
         """
-        with open('delete_log_{}.sql'.format(time.strftime("%Y%m%d-%H%M%S", time.localtime())), 'w') as f:
+        with open('delete_log_{}_{}.sql'.format(cons.HOST.replace('.', '_'),
+                                                time.strftime("%Y%m%d-%H%M%S", time.localtime())), 'w') as f:
             for line in DELETE_LOGS[::-1]:
                 f.write(line)
                 f.write(';\n')
@@ -528,7 +529,9 @@ class Excel2Mysql:
         """
         # 判断是否存在delete_log，如果存在，需要人工判断是否插入，以免录入重复数据
         if self.exists_delete_log():
-            raise ValueError('请判断delete_log是执行 or 删除')
+            is_error = input('当前存在delete_log，是否立即停止（y停止，n继续）')
+            if is_error == 'y':
+                raise ValueError('请判断delete_log是执行 or 删除')
         # 初始化机构、部门数据
         departments = self.init_datas()
         # 获取package的完整数据
@@ -542,3 +545,70 @@ class Excel2Mysql:
             traceback.print_exc()
         # 记录log
         self.record_delete_log()
+
+
+class Excel2MysqlAppointID(Excel2Mysql):
+    """
+    为了避免测试的时候不断的入库删库，自增id增长太快
+    """
+
+    def __init__(self, template_disease_file_path, excel_check_file_path, present_file_path, extract_template_files):
+        super(Excel2MysqlAppointID, self).__init__(template_disease_file_path, excel_check_file_path, present_file_path,
+                                                   extract_template_files)
+        # 初始化每张表的最大id
+        for table in ['custom_segment_v2',
+                      'department_mapping',
+                      'disease_package_v2',
+                      'medical_history_segment_v2',
+                      'package',
+                      'physical_segment_v2',
+                      'template',
+                      'department',
+                      'virtual_department', ]:
+            sql = 'select max(id) from {}'.format(table)
+            cur.execute(sql)
+            id_ = cur.fetchone()[0]
+            setattr(self, table, id_)
+
+    def get_insert_sql(self, table_name, infos: dict, sign=1):
+        """
+        拼接insert的sql语句
+        指定id
+        :param table_name:
+        :param infos:
+        :param sign: 0直接插入数据，不忽略报错；1利用新数据更新老数据；2如果存在相同数据，则以老数据为准
+        :return:
+        """
+        if infos.get('id') is None:
+            table_name = table_name.lower()
+            # getattr出来的id是当前的最大id
+            now_id = getattr(self, table_name) + 1
+            setattr(self, table_name, now_id)
+            infos['id'] = now_id
+
+        sign = int(sign)
+        col_str = ''
+        row_str = ''
+        for key in infos.keys():
+            if infos[key] is not None:
+                col_str = col_str + " " + key + ","
+                row_str = "{}'{}',".format(row_str, self.format_sql(infos[key]))
+                sql = "INSERT INTO {} ({}) VALUES ({}) ".format(table_name, col_str[1:-1],
+                                                                row_str[:-1])
+        if sign == 1:
+            # 如果要以新的数据更新老数据，则拼接update语句
+            sql += 'ON DUPLICATE KEY UPDATE '
+            for (key, value) in six.iteritems(infos):
+                if value is not None:
+                    sql += "{} = '{}', ".format(key, self.format_sql(value))
+            sql = sql[:-2]
+        elif sign == 2:
+            # 如果以老的数据为准，则ignore
+            sql = sql.replace('INSERT INTO', 'INSERT IGNORE INTO')
+        else:
+            pass
+        return sql
+
+
+if __name__ == '__main__':
+    Excel2MysqlAppointID(1, 2, 3, 4)
