@@ -8,6 +8,7 @@
 import copy
 import datetime
 import json
+import os
 import re
 import time
 import traceback
@@ -496,6 +497,18 @@ class Excel2Mysql:
                 f.write(line)
                 f.write(';\n')
 
+    def exists_delete_log(self):
+        """
+        判断delete_log是否存在
+        :return:
+        """
+        g = os.walk('.')
+
+        for _, _, file_list in g:
+            for file in file_list:
+                if 'delete_log' in file:
+                    return True
+
     def db_localhost(self):
         """
         判断目前的数据库配置是否为本地
@@ -513,6 +526,9 @@ class Excel2Mysql:
         将数据写入数据库
         :return:
         """
+        # 判断是否存在delete_log，如果存在，需要人工判断是否插入，以免录入重复数据
+        if self.exists_delete_log():
+            raise ValueError('请判断delete_log是执行 or 删除')
         # 初始化机构、部门数据
         departments = self.init_datas()
         # 获取package的完整数据

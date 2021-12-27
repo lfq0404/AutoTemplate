@@ -227,7 +227,7 @@ class ManualCheck:
                         & (standard_datas[6] == category_text)
                         & (standard_datas[2] == label)
                         ].iloc[0][3]
-                    if standard_content != segment_content:
+                    if json.loads(standard_content) != json.loads(segment_content):
                         is_pass = False
                         print('文件《{}》的 {} 还需要检查'.format(file_name, label))
                         print('1、最新的content：{}'.format(segment_content))
