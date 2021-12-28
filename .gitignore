@@ -131,3 +131,4 @@ delete_log*.sql
 病历书写规范.pdf
 *.ipynb
 ~$*.xlsx
+*.zip
