@@ -70,7 +70,7 @@ import pymysql
 import six
 from pymysql.converters import escape_string
 
-from myUtils import read_excel
+from myUtils import read_excel, get_check_file_datas
 
 
 def get_entities(raw_json):

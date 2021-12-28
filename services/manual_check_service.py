@@ -27,7 +27,7 @@ class ManualCheck:
         self.excel_result_for_check_path = excel_result_for_check_path
         self.extract_template_files = extract_template_files
         self.standard_file_path = standard_file_path
-        self.show_html_path = '{}/services/aiwizard.html'.format(cons.BASE_PATH)
+        self.show_html_path = '{}/services/local_aiwizard.html'.format(cons.BASE_PATH)
         self.template_disease_file_path = template_disease_file_path
 
     def check_recent_segments(self):
@@ -181,6 +181,7 @@ class ManualCheck:
             datas[[0, 1, 2, 3, 4, 5, 6]].to_excel(self.standard_file_path, sheet_name=cons.SHEET_NAME,
                                                   index=False,
                                                   header=False)
+            raise ValueError('请开始人工检查')
         else:
             is_pass = True
             # 如果存在，则需要对比新生成的文件与标准数据的区别
@@ -337,13 +338,13 @@ def _bug_check(file):
     else:
         _type = 'MEDICINE'
 
-    with open('aiwizard.html', 'r') as f:
+    with open('local_aiwizard.html', 'r') as f:
         html = f.read()
     html = re.sub('deptCode: "(\d+)"', 'deptCode: "{}"'.format(department_code), html)
     html = re.sub('tplType: "(.+)"', 'tplType: "{}"'.format(_type), html)
-    with open('aiwizard.html', 'w') as f:
+    with open('local_aiwizard.html', 'w') as f:
         f.write(html)
-    print('打开医院提供的原始HTML与aiwizard.html，对比效果')
+    print('打开医院提供的原始HTML与local_aiwizard.html，对比效果')
     print()
 
 

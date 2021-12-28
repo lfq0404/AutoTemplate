@@ -126,7 +126,7 @@ def _get_new_template_content(datas, num):
     label = line[2]
     new_label = line[7]
 
-    if template_content.count('{{{}}}'.format(label)) == 1:
+    if template_content.count('{}'.format(label)) == 1:
         return template_content.replace(label, new_label)
     else:
         # 如果一个content中有多个同名label，则需要判断顺序

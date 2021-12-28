@@ -357,6 +357,8 @@ OPTION_MAP = {
     '规律': [['规律', '不规律'], 0, cons.VALUE_TYPE_RADIO],
     '灵敏': [['灵敏', '迟钝'], 0, cons.VALUE_TYPE_RADIO],
     '迟钝': [['灵敏', '迟钝'], 0, cons.VALUE_TYPE_RADIO],
+    '存在': [['存在', '不存在'], 0, cons.VALUE_TYPE_RADIO],
+    '光滑': [['光滑', '高低不平'], 0, cons.VALUE_TYPE_RADIO],
 }
 
 # 全为阳性的选项
