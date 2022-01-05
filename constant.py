@@ -11,7 +11,7 @@ import os
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 
 # 暂时不需要抓取的段落
-NOT_EXTRACT_PARAGRAPHS = '(现病史|主诉)'
+NOT_EXTRACT_PARAGRAPHS = '(主诉|姓名|性别|年龄|科室|日期|类别|病假)'
 
 PRESENT_NAME = '现病史'
 PHYSICAL_NAME = '查体'
@@ -96,7 +96,7 @@ USER = 'generator'
 PASSWORD = 'Generator@123'
 DB_NAME = 'aiwizard_test'
 
-# HOST = 'localhost'
-# USER = 'root'
-# PASSWORD = 'a5300328'
-# DB_NAME = 'aiwizard_test'
+HOST = 'localhost'
+USER = 'root'
+PASSWORD = 'a5300328'
+DB_NAME = 'aiwizard_test'

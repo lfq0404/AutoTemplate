@@ -9,6 +9,7 @@ import re
 
 from html.parser import HTMLParser
 
+import bs4
 import regex
 from bs4 import BeautifulSoup
 
@@ -271,3 +272,39 @@ class RJExtract(ExtractCore):
             return True
 
         return False
+
+    def paragraphs(self) -> list:
+        """
+        该文件的所有段落
+        针对瑞金的特殊方法，直接根据span.id来获取
+        个人史、婚育史……为一个段落
+        :return: [['现病史', text], ['个人史', text]]
+        """
+        paragraphs = []
+        with open(self.file_path, 'r') as f:
+            text = f.read()
+        soup = BeautifulSoup(text, features="html.parser")
+        # 给strong添加token属性
+        for strong in soup.find_all('strong'):
+            strong['token'] = 'label'
+        # 获取所有符合要求的标签
+        labels = soup.find_all(['span', 'strong'], attrs={'token': 'label'})
+        for label in labels:
+            key = label.get_text().strip()[:-1].replace('\n', '')
+            if key in cons.NOT_EXTRACT_PARAGRAPHS:
+                continue
+
+            # 获取paragraph的文本内容
+            paragraph = [key, '']
+            while 1:
+                label = label.next_sibling
+                if not label or label in labels or \
+                        type(label) == bs4.element.Tag and label.find(['span', 'strong'], attrs={'token': 'label'}):
+                    break
+                paragraph[1] += re.sub('(\xa0|\s*$|\n)', '', label.get_text())
+            if 'emr_reference' in paragraph[1]:
+                continue
+
+            paragraphs.append(paragraph)
+
+        return paragraphs

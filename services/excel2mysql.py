@@ -39,6 +39,8 @@ DELETE_LOGS = []
 
 
 class Excel2Mysql:
+    # TODO：优化入库代码，批量提交
+    # 思路1：在本地跑一遍，把SQL拉出来
     def __init__(self, template_disease_file_path, excel_check_file_path, present_file_path, extract_template_files):
         self.template_disease_file_path = template_disease_file_path
         self.excel_check_file_path = excel_check_file_path

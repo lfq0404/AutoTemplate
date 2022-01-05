@@ -9,7 +9,7 @@ from constant import *
 
 # 原始模板地址
 TEMPLATE_PATH = '/Users/jeremy.li/Basebit/Documents/develop/smart/20211013-瑞金门急诊模板配置/20211220-门诊660'
-TASK_PATH = '{}/tasks/templates660_1221'.format(BASE_PATH)
+TASK_PATH = os.path.abspath(os.path.dirname(__file__))
 
 # 输出的Excel
 EXCEL_RESULT_FOR_CHECK_PATH = '{}/result_for_check_templates.xlsx'.format(TASK_PATH)

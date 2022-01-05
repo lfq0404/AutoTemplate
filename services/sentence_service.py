@@ -17,7 +17,7 @@ def get_sentence_extract_instance(sentence):
     :return:
     """
     sentence_text = ''.join([i[0] for i in sentence])
-    if '等不良情绪' in sentence_text:
+    if re.findall('(等不良情绪|等大等圆|如有乏力)', sentence_text):
         return SentenceExtractBase(sentence)
     # 无烟酒等不良嗜好
     elif '烟、酒' in sentence_text:
@@ -582,10 +582,14 @@ class BracketsEnumSentenceExtract(SentenceExtractBase):
                 options.add(i[0])
 
         options = list(options)
-        # 能进入这里，肯定有左右括号，也肯定有两个bracket_ind
-        new_sentence = sentence[:left_bracket_ind + 1] + [[options[0], cons.AG_OPTION]] + sentence[right_bracket_ind:]
-        # 在配置中添加：{'瘀血证': [['瘀血证', '寒湿证', '肾虚证'], 2]}
-        sign = 2 if options[0] in conf.POSITIVE_OPTIONS else 1
-        conf.OPTION_MAP[options[0]] = [options, sign, cons.VALUE_TYPE_RADIO]
+        try:
+            # 能进入这里，肯定有左右括号，也肯定有两个bracket_ind
+            new_sentence = sentence[:left_bracket_ind + 1] + [[options[0], cons.AG_OPTION]] + sentence[
+                                                                                              right_bracket_ind:]
+            # 在配置中添加：{'瘀血证': [['瘀血证', '寒湿证', '肾虚证'], 2]}
+            sign = 2 if options[0] in conf.POSITIVE_OPTIONS else 1
+            conf.OPTION_MAP[options[0]] = [options, sign, cons.VALUE_TYPE_RADIO]
 
-        return new_sentence
+            return new_sentence
+        except:
+            return sentence

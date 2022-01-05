@@ -119,6 +119,33 @@ JIEBA_USER_DICTS = [
     ['活动性', DEFAULT_FREQUENCY, 'n'],
     ['易紧张', DEFAULT_FREQUENCY, 'n'],
     ['经期暂缓', DEFAULT_FREQUENCY, 'n'],
+    ['；或', DEFAULT_FREQUENCY, 'n'],
+    ['时流清涕', DEFAULT_FREQUENCY, 'n'],
+    ['心悸多梦', DEFAULT_FREQUENCY, 'n'],
+    ['或见恶寒发热', DEFAULT_FREQUENCY, 'n'],
+    ['诱因下', DEFAULT_FREQUENCY, 'n'],
+    ['cm/', DEFAULT_FREQUENCY, 'n'],
+    ['Tanner分期G/B', DEFAULT_FREQUENCY, 'n'],
+    ['双乳B1', DEFAULT_FREQUENCY, 'n'],
+    ['cm/年', DEFAULT_FREQUENCY, 'n'],
+    ['男孩装扮及玩具', DEFAULT_FREQUENCY, 'n'],
+    ['女孩装扮及玩具', DEFAULT_FREQUENCY, 'n'],
+    ['/P', DEFAULT_FREQUENCY, 'n'],
+    ['足月剖腹产', DEFAULT_FREQUENCY, 'n'],
+    ['意识丧失', DEFAULT_FREQUENCY, 'n'],
+    ['表现为', DEFAULT_FREQUENCY, 'n'],
+    ['次/天', DEFAULT_FREQUENCY, 'n'],
+    ['易饥', DEFAULT_FREQUENCY, 'n'],
+    ['多饮', DEFAULT_FREQUENCY, 'n'],
+    ['尿痛', DEFAULT_FREQUENCY, 'n'],
+    ['气促、呼吸困难', DEFAULT_FREQUENCY, 'n'],
+    ['“三多一少”', DEFAULT_FREQUENCY, 'n'],
+    ['“头晕、头痛”', DEFAULT_FREQUENCY, 'n'],
+    ['上呼吸感染病史', DEFAULT_FREQUENCY, 'n'],
+    ['红色食物（火龙果）等', DEFAULT_FREQUENCY, 'n'],
+    ['kg/年', DEFAULT_FREQUENCY, 'n'],
+    ['腹型', DEFAULT_FREQUENCY, 'n'],
+    ['向心性', DEFAULT_FREQUENCY, 'n'],
 
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['港体及导管处皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
@@ -152,14 +179,33 @@ JIEBA_USER_DICTS = [
     ['明显干湿罗音', DEFAULT_FREQUENCY * 10, 'n'],
     ['/L', DEFAULT_FREQUENCY * 10, 'n'],
     ['多思多虑', DEFAULT_FREQUENCY * 10, 'n'],
+    ['稠厚成块', DEFAULT_FREQUENCY * 10, 'n'],
+    ['痰出咳平', DEFAULT_FREQUENCY * 10, 'n'],
+    ['失眠多梦', DEFAULT_FREQUENCY * 10, 'n'],
+    ['气血两虚证', DEFAULT_FREQUENCY * 10, 'n'],
+    ['肢软无力', DEFAULT_FREQUENCY * 10, 'n'],
+    ['脉弦滑数', DEFAULT_FREQUENCY * 10, 'n'],
+    ['烦躁紧张', DEFAULT_FREQUENCY * 10, 'n'],
+    ['增粗', DEFAULT_FREQUENCY * 10, 'n'],
+    ['多饮多食', DEFAULT_FREQUENCY * 10, 'n'],
+    ['面色及精神明显欠佳', DEFAULT_FREQUENCY * 10, 'n'],
+    ['若有', DEFAULT_FREQUENCY * 10, 'n'],
 
     ['时间', DEFAULT_FREQUENCY // 10, 'text'],
     ['[0]', DEFAULT_FREQUENCY, 'text'],
+    ['文字输入', DEFAULT_FREQUENCY, 'text'],
+    ['输入数值', DEFAULT_FREQUENCY, 'text'],
     ['输入', DEFAULT_FREQUENCY, 'text'],
     ['请输入', DEFAULT_FREQUENCY, 'text'],
     ['编辑', DEFAULT_FREQUENCY, 'text'],
     ['情况', DEFAULT_FREQUENCY, 'text'],
     ['/文字描述', DEFAULT_FREQUENCY, 'text'],
+    ['咳嗽性质', DEFAULT_FREQUENCY, 'text'],
+    ['性质', DEFAULT_FREQUENCY, 'text'],
+    ['具体情况', DEFAULT_FREQUENCY, 'text'],
+    ['检查及结果', DEFAULT_FREQUENCY, 'text'],
+    ['治疗方式', DEFAULT_FREQUENCY, 'text'],
+    ['症状缓解程度', DEFAULT_FREQUENCY, 'text'],
 
     # 在这添加了option，需要在OPTION_MAP中添加对应的解析
     ['有无', DEFAULT_FREQUENCY, 'option'],
@@ -197,7 +243,6 @@ JIEBA_USER_DICTS = [
     ['中上', DEFAULT_FREQUENCY, 'option'],
     ['平软', DEFAULT_FREQUENCY, 'option'],
     ['平', DEFAULT_FREQUENCY // 10, 'option'],
-    ['紫绀', DEFAULT_FREQUENCY, 'option'],
     ['潮红', DEFAULT_FREQUENCY, 'option'],
     ['软', DEFAULT_FREQUENCY, 'option'],
     ['切题', DEFAULT_FREQUENCY, 'option'],
@@ -247,6 +292,10 @@ JIEBA_USER_DICTS = [
     ['未闻', DEFAULT_FREQUENCY, 'option'],
     ['规律', DEFAULT_FREQUENCY // 10, 'option'],
     ['不规律', DEFAULT_FREQUENCY, 'option'],
+    ['蹇涩', DEFAULT_FREQUENCY, 'option'],
+    ['溏烂', DEFAULT_FREQUENCY, 'option'],
+    ['重浊', DEFAULT_FREQUENCY, 'option'],
+    ['濡滑', DEFAULT_FREQUENCY, 'option'],
 ]
 # 自定义词组存在的词
 JIEBA_USER_WORDS = [i[0] for i in JIEBA_USER_DICTS]
@@ -296,13 +345,12 @@ OPTION_MAP = {
     '中上': [['右上', '中上', '左上', '右下', '中下', '左下'], 1, cons.VALUE_TYPE_RADIO],
     '平软': [['平软', '僵硬'], 0, cons.VALUE_TYPE_RADIO],
     '平': [['平', '不平'], 0, cons.VALUE_TYPE_RADIO],
-    '紫绀': [['紫绀'], 0, cons.VALUE_TYPE_RADIO],
     '潮红': [['潮红'], 0, cons.VALUE_TYPE_RADIO],
     '软': [['软', '硬'], 0, cons.VALUE_TYPE_RADIO],
     '切题': [['切题', '不切题'], 0, cons.VALUE_TYPE_RADIO],
     '桶状': [['桶状'], 1, cons.VALUE_TYPE_RADIO],
     '轻度': [['轻度', '中度', '重度'], 2, cons.VALUE_TYPE_RADIO],
-    '一般': [['一般'], 1, cons.VALUE_TYPE_RADIO],
+    '一般': [['良好', '一般'], 0, cons.VALUE_TYPE_RADIO],
     '脓性粘性水样血性干酪样': [['脓性', '粘性', '水样', '血性', '干酪样'], 2, cons.VALUE_TYPE_RADIO],
     '息肉样乳头状桑葚状菜花样': [['息肉样', '乳头状', '桑葚状', '菜花样'], 2, cons.VALUE_TYPE_RADIO],
     '颈项部': [['颈项部'], 1, cons.VALUE_TYPE_RADIO],
@@ -359,6 +407,11 @@ OPTION_MAP = {
     '迟钝': [['灵敏', '迟钝'], 0, cons.VALUE_TYPE_RADIO],
     '存在': [['存在', '不存在'], 0, cons.VALUE_TYPE_RADIO],
     '光滑': [['光滑', '高低不平'], 0, cons.VALUE_TYPE_RADIO],
+    '紫暗': [['淡红', '紫暗'], 0, cons.VALUE_TYPE_RADIO],
+    '蹇涩': [['正常', '蹇涩'], 0, cons.VALUE_TYPE_RADIO],
+    '溏烂': [['正常', '溏烂'], 0, cons.VALUE_TYPE_RADIO],
+    '重浊': [['重浊'], 1, cons.VALUE_TYPE_RADIO],
+    '濡滑': [['濡滑'], 0, cons.VALUE_TYPE_RADIO],
 }
 
 # 全为阳性的选项
@@ -680,8 +733,13 @@ PRE_TREATMENT_CFG = [
 
     {
         # “形态”直接结尾，需要添加输入框
-        'pat': '(?<=形态$)()',
+        'pat': '(?<=(相关就诊记录|形态)$)()',
         'repl': '：输入'
+    },
+    {
+        # “时间：”直接结尾，需要添加输入框
+        'pat': '(?<=时间：$)()',
+        'repl': '输入'
     },
     {
         # 直径约 mm --> 空格替换
@@ -873,10 +931,6 @@ PRE_TREATMENT_CFG = [
         'repl': '等大等圆'
     },
     {
-        'pat': '等大.等圆',
-        'repl': '等大等圆'
-    },
-    {
         'pat': '，药物名称、计量、服用时间',
         'repl': ''
     },
@@ -905,28 +959,122 @@ PRE_TREATMENT_CFG = [
         'repl': '过敏史'
     },
     {
-        'pat': '，外伤日期、部位、程度、诊疗结果',
+        'pat': '(，情况|发病时间，慢性疾病史类型|具体因何疾病作何手术，手术日期及手术结果|，外伤日期、部位、程度、诊疗结果'
+               '|发病时间，传染性疾病史类型|，具体情况|，呕吐物情况|，腹泻情况|，性质|，腹痛情况|，具体分布情况|：具体'
+               '|，疼痛部位及性质|，咳嗽性质|，呕吐次数、程度，呕吐物性状|，部位，腹痛性质、程度|，其他症状|，头痛情况'
+               '|，时间和时间|，发作的频率和周期，持续时间|，感染症状|，具体好转情况|，症状表现|，水肿部位|，分布于部位)(?![\u4e00-\u9fa5])',
         'repl': ''
     },
     {
-        'pat': '具体因何疾病作何手术，手术日期及手术结果',
+        'pat': '有/无排便次数增多',
+        'repl': '排便次数有/无增多'
+    },
+    {
+        'pat': '有/无颈部增粗',
+        'repl': '颈部有/无增粗'
+    },
+    {
+        'pat': '有/无尿频，尿痛，尿急',
+        'repl': '有/无尿频，尿痛，尿急等'
+    },
+    {
+        'pat': '有/无呼气烂苹果味',
+        'repl': '呼气有/无烂苹果味'
+    },
+    {
+        'pat': '有/无性情改变',
+        'repl': '性情有/无改变'
+    },
+    {
+        'pat': '有/无拒食、流涎',
+        'repl': '有/无拒食、流涎等'
+    },
+    {
+        'pat': '患儿时间前有',
+        'repl': '患儿时间前，有'
+    },
+    {
+        'pat': '肠鸣音\[0\]/分',
+        'repl': '肠鸣音[0]次/分'
+    },
+    {
+        'pat': '双乳B1/输入输入期',
+        'repl': '双乳B1输入期'
+    },
+    {
+        'pat': '足月剖腹产/足月顺产/早产',
+        'repl': '生产：足月剖腹产/足月顺产/早产'
+    },
+    {
+        'pat': '输入cm ',
+        'repl': '输入cm，'
+    },
+    {
+        'pat': '，时间有/无腹痛',
+        'repl': '，有/无腹痛'
+    },
+    {
+        'pat': '^咳嗽性质，',
         'repl': ''
     },
     {
-        'pat': '部位',
+        'pat': '其他。$',
         'repl': ''
     },
     {
-        'pat': '发病时间，慢性疾病史类型',
-        'repl': ''
+        # 有/无面色苍白、发绀后添加“等”
+        'pat': '(双眼上翻、凝视|面色苍白、发绀|头晕、面色苍白、出冷汗|有/无皮疹、瘀斑|有/无尿频、尿痛)(?![\u4e00-\u9fa5])',
+        'repl': r'\1等'
     },
     {
-        'pat': '发病时间，传染性疾病史类型',
-        'repl': ''
+        'pat': '有/无输入诱因',
+        'repl': '有/无诱因'
+    },
+    {
+        'pat': '多饮、多尿、易饥',
+        'repl': '多饮/多尿/易饥'
+    },
+    {
+        'pat': '予输入治疗后症状有',
+        'repl': '予输入治疗后，症状有'
+    },
+    {
+        'pat': '，胸痛频率，',
+        'repl': '，胸痛频率：输入，'
+    },
+    {
+        'pat': '出现症状，',
+        'repl': '出现症状。'
+    },
+    {
+        'pat': '曾患疾病名称；',
+        'repl': '曾患疾病名称：输入；'
+    },
+    {
+        'pat': '（利福平，苯妥英钠）',
+        'repl': '利福平，苯妥英钠'
+    },
+    {
+        'pat': '脉搏有/无细速皮肤',
+        'repl': '脉搏有/无细速，皮肤'
+    },
+    {
+        'pat': '输入数字/不详[0]',
+        'repl': '输入'
+    },
+    {
+        'pat': '腹痛腹泻等不适',
+        'repl': '腹痛、腹泻等不适'
+    },
+    {
+        'pat': 'G输入/P输入',
+        'repl': 'G输入，P输入'
     },
 
 ]
+
 _ENUM_DISEASES = ['高血压', '脑梗塞', '糖尿病', '哮喘病', '心脏病']
+
 PRE_TREATMENT_CFG += [
     {
         # 高血压等关键词前面有特定标点符号，且后面没有跟“等”字，则自动添加“等”
@@ -939,23 +1087,21 @@ PRE_TREATMENT_CFG += [
         'pat': '(?<=、)({}史)(?![、等])'.format('史|'.join(_ENUM_DISEASES)),
         'repl': r'\1等'
     },
-
     {
         # 将xx,xx等，视为完整的一句话
         'pat': '(?<=等[\u4e00-\u9fa5]*)(，)',
         'repl': '。'
     },
 ]
+
 # 以下内容直接展示在display中
 DISPLAY_SENTENCE_TEXTS = [
     '末次月经',
     '留观半小时无殊后予离开诊室',
     '主动活动上举后弯较前好转',
-    # '角膜光泽，前房清，虹瞳好，晶体清，眼底：视盘边界清，网膜平伏，黄斑中心反光可见',
     '今去龋尽，备洞，酒精消毒，VOCO垫底',
     '远中龈切/去骨/分牙，顺利，置明胶海绵，纱布咬合，告医嘱',
     '肌肉痉挛',
-    '腰痛',
     '弯腰及转身活动受限',
     '生理弧度消失',
     '术顺',
@@ -971,6 +1117,27 @@ DISPLAY_SENTENCE_TEXTS = [
     '减量或停药',
     '未发现明显异常',
     ' 1.龙胆泻心汤合五味消毒饮加减2.除湿胃苓汤或参苓白术散加减3.当归引子加减',
+    '恶风，身热，面赤，头痛，鼻塞，流黄浊涕，咳嗽',
+    '喉燥咽痛，口渴欲饮，舌边尖红，苔薄黄，脉浮数',
+    '患者半身不遂，肢软无力，语言蹇涩，口眼歪斜，面色萎黄，舌淡白，舌体不正，脉细涩',
+    '恶寒、发热',
+    '患者发热，恶寒',
+    '脉沉弦紧',
+    '痰黏腻、稠厚成块，色灰白，因痰而嗽，痰出咳平，胸闷，脘痞，呕恶，食少，体倦，大便时溏',
+    '干咳、咳声短促、痰中带血丝，声音逐渐嘶哑，口干咽燥，午后潮热，颧红',
+    '盗汗，口干，日渐消瘦，神疲，舌红苔少，脉细数',
+    '患者肌肤不仁，手足麻木，口眼歪斜，言语不利，口角流涎，半身不遂$见恶寒发热，肢体拘急，关节酸痛',
+    '头痛、咳嗽、鼻塞、时流清涕、肢节酸楚、舌淡',
+    '脉浮',
+    '肢冷，头身痛，痰饮质稀色灰白，口淡乏味，精神不振',
+    '大便，小便，胃纳',
+    '化疗后乏力，免疫功能低下，面色少华，畏寒肢冷，神疲乏力，失眠多梦，舌淡',
+    '口苦，口臭，烦躁易怒，尿黄，大便粘滞不畅',
+    '忌碘饮食（海产品及含碘盐），避免剧烈运动，注意甲亢危象（心跳突然增快、发热、情绪激动、昏迷），如有异常及时就医',
+    '表现为：',
+    '发作前',
+    '自发病以来',
+    '如有乏力、恶心、呕吐、腹泻或体重降低或反复感染、急发虚脱、突发腹痛、腰背痛等及时就诊',
 ]
 
 # 当遇到以下内容，需要临时调整jieba自定义词组
@@ -980,6 +1147,10 @@ SPECIAL_WORDS = [
     ['有无咽部红肿', ['咽部红肿', 'n']],
     ['关节无红肿畸形', ['红肿畸形', 'n']],
     ['输入压痛明显', ['压痛明显', 'n']],
+    ['持续时间', ['时间', 'text']],
+    ['单侧/双侧', ['单侧', 'n']],
+    ['出现症状', ['症状', 'text']],
+    ['伴部位肿块', ['部位', 'text']],
 ]
 
 # 无穷枚举中可能出现的前缀词，将相关的词放在display中

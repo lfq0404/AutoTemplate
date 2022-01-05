@@ -12,13 +12,30 @@ import more_itertools as mit
 import constant as cons
 
 
-def record2excel(excel_check_file_path, datas):
+def record2excel(output_file_path, datas: list):
     """
     将解析的数据放在Excel中
-    :param excel_check_file_path: 供后续程序读取的Excel路径
+    可以按需要合并单元格
+    :param output_file_path: 供后续程序读取的Excel路径
     :param datas:
     :return:
     """
+    # 需要合并单元格的配置
+    merge_cols = [
+        {
+            'col_name': '文件名',
+            'col_num': 0
+        },
+        {
+            'col_name': 'display',
+            'col_num': 1
+        },
+        {
+            'col_name': '原始段落',
+            'col_num': 5
+        },
+
+    ]
     file_col = []
     display_col = []
     type_col = []  # 用于展示属于什么史
@@ -64,25 +81,12 @@ def record2excel(excel_check_file_path, datas):
         'new_label': new_label_col,
         'new_content': new_content_col,
     })
-    merge_cols = [
-        {
-            'col_name': '文件名',
-            'col_num': 0
-        },
-        {
-            'col_name': 'display',
-            'col_num': 1
-        },
-        {
-            'col_name': '原始段落',
-            'col_num': 5
-        },
 
-    ]
-    # # 用于校验的
-    # df.to_excel(excel_check_file_path, sheet_name=cons.SHEET_NAME, index=False)
+    # 用于校验的
+    df[['label', 'content', '原始短句']].drop_duplicates().to_excel(
+        output_file_path.replace('.xlsx', 'distinct.xlsx'), sheet_name=cons.SHEET_NAME, index=False)
     # 用于查看的
-    writer = pd.ExcelWriter(excel_check_file_path, engine='xlsxwriter')
+    writer = pd.ExcelWriter(output_file_path, engine='xlsxwriter')
     df.to_excel(writer, sheet_name=cons.SHEET_NAME, index=False)
     workbook = writer.book
     worksheet = writer.sheets[cons.SHEET_NAME]
@@ -123,13 +127,9 @@ def record2excel(excel_check_file_path, datas):
         col_name = merge_col['col_name']
         col_num = merge_col['col_num']
         for car in df[col_name].unique():
-            # find indices and add one to account for header
             u = df.loc[df[col_name] == car].index.values + 1
 
-            if len(u) < 2:
-                pass  # do not merge cells if there is only one car name
-            else:
-                # merge cells using the first and last indices
+            if len(u) >= 2:
                 # 只merge连续表格
                 for ut in [list(group) for group in mit.consecutive_groups(u)]:
                     if len(ut) > 1:
@@ -144,3 +144,73 @@ def record2excel(excel_check_file_path, datas):
     worksheet.set_column('G:G', 50, content_format)
 
     writer.save()
+
+
+if __name__ == '__main__':
+    record2excel(
+        'merge_test.xlsx',
+        [
+            ['脑病-气虚血瘀证(初诊)模板(4090100)脑病-气虚血瘀证(初诊)5d4d170e-6212-463e-aade-b123b2ec85a1.html',
+             '<b>既往史：</b>',
+             [],
+             ''],
+            ['脑病-气虚血瘀证(初诊)模板(4090100)脑病-气虚血瘀证(初诊)5d4d170e-6212-463e-aade-b123b2ec85a1.html',
+             '<b>个人史：{平素体质}，{烟酒}</b>',
+             [[{'label': '平素体质',
+                'type': 'RADIO',
+                'value': ['0'],
+                'options': [{'label': '良好',
+                             'display': '平素体质良好',
+                             'props': {'color': 'green'},
+                             'value': '0',
+                             'addition': None},
+                            {'label': '一般',
+                             'display': '平素体质一般',
+                             'props': {'color': 'red'},
+                             'value': '1',
+                             'addition': None}]},
+               '平素体质一般'],
+              [{'label': '烟酒',
+                'type': 'RADIO',
+                'value': ['0'],
+                'options': [{'label': '无',
+                             'display': '无烟，酒等不良嗜好',
+                             'props': {'color': 'green'},
+                             'addition': None,
+                             'value': '0'},
+                            {'label': '烟',
+                             'display': '吸烟：时长{时长}年，频率{频率}支/天',
+                             'props': {'color': 'red'},
+                             'addition': [{'label': '时长',
+                                           'type': 'TEXT',
+                                           'value': '',
+                                           'freetextPrefix': '',
+                                           'freetextPostfix': '',
+                                           'placeholder': ''},
+                                          {'label': '频率',
+                                           'type': 'TEXT',
+                                           'value': '',
+                                           'freetextPrefix': '',
+                                           'freetextPostfix': '',
+                                           'placeholder': ''}],
+                             'value': '1'},
+                            {'label': '酗酒',
+                             'display': '酗酒：时长{时长}年，酒量{酒量}ml/天',
+                             'props': {'color': 'red'},
+                             'addition': [{'label': '时长',
+                                           'type': 'TEXT',
+                                           'value': '',
+                                           'freetextPrefix': '',
+                                           'freetextPostfix': '',
+                                           'placeholder': ''},
+                                          {'label': '酒量',
+                                           'type': 'TEXT',
+                                           'value': '',
+                                           'freetextPrefix': '',
+                                           'freetextPostfix': '',
+                                           'placeholder': ''}],
+                             'value': '2'}]},
+               '有无烟、酒等不良嗜好']],
+             '平素体质一般，无烟酒等特殊嗜好'],
+        ]
+    )
