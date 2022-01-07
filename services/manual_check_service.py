@@ -277,7 +277,7 @@ class ManualCheck:
     2）安装node版本管理器，并切到node8（可选）：sudo npm install n -g  && n 8.4.0
     3）安装gulp：npm install gulp@3.9.1
     4）npm install
-    5）1
+    5）npm run start
 若准备完成，请输入y，否则输入任意后终止程序""")
         if ready != 'y':
             raise ValueError('马上去准备')

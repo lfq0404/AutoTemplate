@@ -13,7 +13,7 @@ TASK_PATH = os.path.abspath(os.path.dirname(__file__))
 
 # 输出的Excel
 EXCEL_RESULT_FOR_CHECK_PATH = '{}/result_for_check_templates.xlsx'.format(TASK_PATH)
-PRESENT_FILE_PATH = '{}/现病史第二批.xlsx'.format(TASK_PATH)
+PRESENT_FILE_PATH = None
 TEMPLATE_DISEASE_FILE_PATH = '{}/template_disease_map.xlsx'.format(TASK_PATH)
 EXCEL_STANDARD_FILE_PATH = '{}/standard_templates.xlsx'.format(TASK_PATH)
 

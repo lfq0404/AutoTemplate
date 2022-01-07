@@ -141,19 +141,21 @@ class Excel2Mysql:
             print(i)
 
         # 附加现病史的内容
-        datas = read_excel(self.present_file_path, '4.现病史可解析')
-        # 先根据new_label修改template_content
-        for _, line in enumerate(datas.itertuples()):
-            file_name = line._1
-            feature = line._3
-            package_info = package_infos.get(file_name)
-            if not package_info:
-                if file_name in self.extract_template_files:
-                    package_infos[file_name] = {}
-                else:
-                    continue
+        # 第二版的现病史直接与非现病史合并了，没有单独的文件
+        if self.present_file_path:
+            datas = read_excel(self.present_file_path, '4.现病史可解析')
+            # 先根据new_label修改template_content
+            for _, line in enumerate(datas.itertuples()):
+                file_name = line._1
+                feature = line._3
+                package_info = package_infos.get(file_name)
+                if not package_info:
+                    if file_name in self.extract_template_files:
+                        package_infos[file_name] = {}
+                    else:
+                        continue
 
-            package_infos[file_name][cons.PRESENT_NAME] = feature
+                package_infos[file_name][cons.PRESENT_NAME] = feature
 
         return package_infos
 
@@ -256,8 +258,8 @@ class Excel2Mysql:
 
             for category_text, template in package_info.items():
                 template_category = cons.KNOWN_CATEGORY_MAP.get(category_text) or 'CUSTOM'
-                if template_category == 'PRESENT':
-                    # 现病史不需要创建segment
+                if self.present_file_path and template_category == 'PRESENT':
+                    # 老版本的现病史不需要创建segment
                     template_content = json.loads(template)
                 else:
                     # 其余类型的创建segment
@@ -272,6 +274,8 @@ class Excel2Mysql:
                             table = 'physical_segment_v2'
                         elif template_category in cons.TABLE_MEDICAL_HISTORY_SEGMENT:
                             table = 'medical_history_segment_v2'
+                        elif template_category in cons.TABLE_PRESENT_SEGMENT:
+                            table = 'present_segment_v2'
                         else:
                             # 其余的全部归在custom下
                             table = 'custom_segment_v2'
@@ -562,14 +566,17 @@ class Excel2MysqlAppointID(Excel2Mysql):
                       'department_mapping',
                       'disease_package_v2',
                       'medical_history_segment_v2',
+                      'present_segment_v2',
                       'package',
                       'physical_segment_v2',
                       'template',
                       'department',
+                      'virtual_department_package_v2',
                       'virtual_department', ]:
             sql = 'select max(id) from {}'.format(table)
             cur.execute(sql)
-            id_ = cur.fetchone()[0]
+            # 为了避免新表，没有id的情况
+            id_ = cur.fetchone()[0] or 0
             setattr(self, table, id_)
 
     def get_insert_sql(self, table_name, infos: dict, sign=1):

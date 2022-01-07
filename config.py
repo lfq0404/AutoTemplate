@@ -190,6 +190,7 @@ JIEBA_USER_DICTS = [
     ['多饮多食', DEFAULT_FREQUENCY * 10, 'n'],
     ['面色及精神明显欠佳', DEFAULT_FREQUENCY * 10, 'n'],
     ['若有', DEFAULT_FREQUENCY * 10, 'n'],
+    ['剖宫', DEFAULT_FREQUENCY * 10, 'n'],
 
     ['时间', DEFAULT_FREQUENCY // 10, 'text'],
     ['[0]', DEFAULT_FREQUENCY, 'text'],
@@ -412,6 +413,8 @@ OPTION_MAP = {
     '溏烂': [['正常', '溏烂'], 0, cons.VALUE_TYPE_RADIO],
     '重浊': [['重浊'], 1, cons.VALUE_TYPE_RADIO],
     '濡滑': [['濡滑'], 0, cons.VALUE_TYPE_RADIO],
+    '伴': [['不伴', '伴'], 0, cons.VALUE_TYPE_RADIO],
+    '不伴': [['不伴', '伴'], 0, cons.VALUE_TYPE_RADIO],
 }
 
 # 全为阳性的选项

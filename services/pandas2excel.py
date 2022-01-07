@@ -84,7 +84,7 @@ def record2excel(output_file_path, datas: list):
 
     # 用于校验的
     df[['label', 'content', '原始短句']].drop_duplicates().to_excel(
-        output_file_path.replace('.xlsx', 'distinct.xlsx'), sheet_name=cons.SHEET_NAME, index=False)
+        output_file_path.replace('.xlsx', '_distinct.xlsx'), sheet_name=cons.SHEET_NAME, index=False)
     # 用于查看的
     writer = pd.ExcelWriter(output_file_path, engine='xlsxwriter')
     df.to_excel(writer, sheet_name=cons.SHEET_NAME, index=False)
