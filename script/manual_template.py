@@ -54,6 +54,7 @@ def radio_add_text(radio, text_keys):
 
     print(json.dumps(radio, ensure_ascii=False))
 
+
 def orange2green(radio):
     """
     将非阴阳的选项改为阴阳选项
@@ -67,7 +68,6 @@ def orange2green(radio):
         i['props']['color'] = 'green' if ind == 0 else 'red'
 
     print(json.dumps(radio, ensure_ascii=False))
-
 
 
 if __name__ == '__main__':

@@ -289,15 +289,18 @@ class ManualCheck:
             if pandas.isna(file_name) or '-' not in file_name or file_name not in self.extract_template_files:
                 continue
             depart_code = line._4
-            icd_code = line._7
-            disease_name = line._8
-            sql = 'select id from {} where code = "{}" and source_id=2 and status=1'.format('disease_v2', icd_code)
-            cur.execute(sql)
-            disease_id = cur.fetchone()
-            if disease_id:
-                disease_id = disease_id[0]
-            else:
-                disease_id = 0
+            icd_codes = [] if pandas.isna(line._7) else line._7.split(',')
+            disease_names = [] if pandas.isna(line._8) else line._8.split(',')
+            disease_name = disease_names[0]
+            icd_code = icd_codes[0] if icd_codes else None
+
+            disease_id = 0
+            if icd_codes:
+                sql = 'select id from {} where code like "{}%" and source_id = 2'.format('disease_v2', icd_code)
+                cur.execute(sql)
+                disease_id = cur.fetchone()
+                if disease_id:
+                    disease_id = disease_id[0]
 
             print('开始校验：{}'.format(file_name))
             if '初诊' in file_name:
@@ -314,6 +317,8 @@ class ManualCheck:
             html = re.sub('"name": "(.+)"', '"name": "{}"'.format(disease_name), html)
             html = re.sub('"code": "(.+)"', '"code": "{}"'.format(icd_code), html)
             html = re.sub('"id": "(.+)"', '"id": "{}"'.format(disease_id), html)
+            print('deptCode={}, tplType={}, name={}, code={}, id={}'.format(depart_code, _type, disease_name, icd_code,
+                                                                            disease_id))
             with open(self.show_html_path, 'w') as f:
                 f.write(html)
             print('打开医院提供的原始HTML与{}，对比效果'.format(self.show_html_path))

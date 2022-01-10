@@ -14,6 +14,7 @@ import time
 import traceback
 
 import pandas
+import pinyin
 import pymysql
 import six
 from pymysql.converters import escape_string
@@ -55,7 +56,7 @@ class Excel2Mysql:
         # 医疗团队产出的映射关系
         package_diseases_map = {}
         datas = read_excel(self.template_disease_file_path, 'Sheet1')
-        for line in datas.itertuples():
+        for num, line in enumerate(datas.itertuples()):
             file_name = line._3
             if pandas.isna(file_name) or '-' not in file_name:
                 continue
@@ -73,8 +74,39 @@ class Excel2Mysql:
                 sql = 'select id from {} where code like "{}%" and source_id = {}'.format('disease_v2', icd_code,
                                                                                           source_id)
                 cur.execute(sql)
-                diseases_temp = cur.fetchall()
-                disease_ids.extend([i[0] for i in diseases_temp])
+                diseases_temp = [i[0] for i in cur.fetchall()]
+                disease_ids.extend(diseases_temp)
+
+            # 如果没有icd_code，且非通用模板，则需要创建自己的disease内容
+            if (not disease_ids) and (not is_depart):
+                icd_codes = []
+                for disease_name in disease_names:
+                    sql = 'select id, code from {} where name = "{}" and source_id = {} and status = 1'.format(
+                        'disease_v2', disease_name, source_id)
+                    cur.execute(sql)
+                    tmp = [i for i in cur.fetchall()]
+                    if tmp:
+                        disease_ids.extend([i[0] for i in tmp])
+                        icd_codes.extend([i[1] for i in tmp])
+                    else:
+                        pinyin_abbr = pinyin.get_initial(disease_name, delimiter='')
+                        sql = self.get_insert_sql(
+                            'disease_v2',
+                            {
+                                'code': 'CODE.{}'.format(pinyin_abbr),
+                                'name': disease_name,
+                                'pinyin_abbr': pinyin_abbr,
+                                'system_id': 56,
+                                'icd_class': 'CODE',
+                                'symptom_flag': 0,
+                                'source_id': 2,
+                                'status': 1,
+                            })
+                        disease_id = self.exec_insert_sql(sql)
+                        disease_ids.append(disease_id)
+                        icd_codes.append('CODE.{}'.format(pinyin_abbr))
+
+                datas.loc[num][6] = ','.join(icd_codes)
 
             package_diseases_map[file_name] = {
                 'depart_name': depart_name,
@@ -564,6 +596,7 @@ class Excel2MysqlAppointID(Excel2Mysql):
         # 初始化每张表的最大id
         for table in ['custom_segment_v2',
                       'department_mapping',
+                      'disease_v2',
                       'disease_package_v2',
                       'medical_history_segment_v2',
                       'present_segment_v2',
