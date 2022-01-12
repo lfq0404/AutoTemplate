@@ -13,14 +13,6 @@
     <button id="submitEMR">2、患者就诊结束后推送医生最后确认保存的患者病历和诊断信息</button>
   </div>
   Iframe: (type=iframe: 网页请求形式；orgCode: 医院id；deptCode：科室id；patientId：患者id； visitId: 就诊id)
-  <!-- <iframe
-    src="http://127.0.0.1:8080/?type=iframe&visitId=707010491&orgCode=00000002&patientId=1646184620231"
-    id="iframepage"
-    width="896px"
-    height="664px"
-    frameborder="0"
-    scrolling="yes"
-  ></iframe> -->
   <iframe
     src="http://172.18.0.76:8116/?type=iframe&visitId=707010491&orgCode=00000002&patientId=1646184620231"
     id="iframepage"
@@ -29,6 +21,14 @@
     frameborder="0"
     scrolling="yes"
   ></iframe>
+  <!-- <iframe
+    src="http://localhost:8080/?type=iframe&visitId=707010491&orgCode=00000002&patientId=1646184620231"
+    id="iframepage"
+    width="896px"
+    height="664px"
+    frameborder="0"
+    scrolling="yes"
+  ></iframe> -->
 </body>
 
 <script>
@@ -165,7 +165,7 @@
         custom: "其他/处理"
       }
     }
-
+    
     $.ajax({
       type: 'POST',
       url: "http://172.18.0.76:8111/api/v1/template/his/emrs",
@@ -175,6 +175,6 @@
         console.log(result);
       }
     });
-
+    
   });
 </script>

@@ -37,6 +37,7 @@ connection = pymysql.connect(host=cons.HOST,  # host属性
 cur = connection.cursor()
 
 DELETE_LOGS = []
+INSERT_LOGS = []
 
 
 class Excel2Mysql:
@@ -519,13 +520,14 @@ class Excel2Mysql:
         table_name = re.findall('into (.*?) ', sql, re.I)[0]
         if _id:
             DELETE_LOGS.append('delete from {} where id = {}'.format(table_name, _id))
+            INSERT_LOGS.append(sql)
             print('{}-新id为：{}'.format(table_name, _id))
         else:
             print('{}-未更新，SQL为：{}'.format(table_name, sql))
         connection.commit()
         return _id
 
-    def record_delete_log(self):
+    def record_sql_log(self):
         """
         记录delete日志
         :return:
@@ -533,6 +535,11 @@ class Excel2Mysql:
         with open('delete_log_{}_{}.sql'.format(cons.HOST.replace('.', '_'),
                                                 time.strftime("%Y%m%d-%H%M%S", time.localtime())), 'w') as f:
             for line in DELETE_LOGS[::-1]:
+                f.write(line)
+                f.write(';\n')
+        with open('insert_log_{}_{}.sql'.format(cons.HOST.replace('.', '_'),
+                                                time.strftime("%Y%m%d-%H%M%S", time.localtime())), 'w') as f:
+            for line in INSERT_LOGS:
                 f.write(line)
                 f.write(';\n')
 
@@ -582,7 +589,7 @@ class Excel2Mysql:
         except:
             traceback.print_exc()
         # 记录log
-        self.record_delete_log()
+        self.record_sql_log()
 
 
 class Excel2MysqlAppointID(Excel2Mysql):

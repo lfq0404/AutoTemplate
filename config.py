@@ -146,6 +146,12 @@ JIEBA_USER_DICTS = [
     ['kg/年', DEFAULT_FREQUENCY, 'n'],
     ['腹型', DEFAULT_FREQUENCY, 'n'],
     ['向心性', DEFAULT_FREQUENCY, 'n'],
+    ['肝肋下', DEFAULT_FREQUENCY, 'n'],
+    ['意识障碍', DEFAULT_FREQUENCY, 'n'],
+    ['小阴茎', DEFAULT_FREQUENCY, 'n'],
+    ['尿道下裂', DEFAULT_FREQUENCY, 'n'],
+    ['外生殖器畸形', DEFAULT_FREQUENCY, 'n'],
+    ['苍灰', DEFAULT_FREQUENCY, 'n'],
 
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['港体及导管处皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
@@ -191,6 +197,8 @@ JIEBA_USER_DICTS = [
     ['面色及精神明显欠佳', DEFAULT_FREQUENCY * 10, 'n'],
     ['若有', DEFAULT_FREQUENCY * 10, 'n'],
     ['剖宫', DEFAULT_FREQUENCY * 10, 'n'],
+    ['多饮', DEFAULT_FREQUENCY * 10, 'n'],
+    ['多尿', DEFAULT_FREQUENCY * 10, 'n'],
 
     ['时间', DEFAULT_FREQUENCY // 10, 'text'],
     ['[0]', DEFAULT_FREQUENCY, 'text'],
@@ -1032,10 +1040,6 @@ PRE_TREATMENT_CFG = [
     {
         'pat': '有/无输入诱因',
         'repl': '有/无诱因'
-    },
-    {
-        'pat': '多饮、多尿、易饥',
-        'repl': '多饮/多尿/易饥'
     },
     {
         'pat': '予输入治疗后症状有',

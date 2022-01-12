@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # text = '门诊密切随访。非那雄胺*2盒，1粒QDPO；多沙唑嗪*2盒，1粒QNPO。入院手术，一月后复查泌尿彩超、尿流率、PSA，fPSA'
     # text = '单侧/双侧对光反射是否灵敏'
     text = 'G输入P输入 ，足月/早/过期产，顺/剖宫产，无/有难产，有/无窒息，出生体重输入kg，身长输入cm。有/无喂养困难。有/无语言发育迟缓，有/无运动发育迟缓。'
-    text = '有无闻及杂音，杂音部位，程度'
+    text = '患儿时间前开始体重明显增加，[0]kg/年，伴/不伴食量增加，伴/不伴多尿，伴/不伴疲乏感，伴/不伴活动后气短'
 
     # 粗分句，且针对特殊内容补全文本
     blocks = get_raw_text_extract_instance(type_name, text).extract_blocks()
@@ -87,5 +87,6 @@ if __name__ == '__main__':
 
     paragraph_display = '<b>{}：{}</b>'.format(type_name, paragraph_display)
     print(paragraph_display)
-    print(json.dumps(segments, ensure_ascii=False))
+    for segment in segments:
+        print(json.dumps(segment, ensure_ascii=False))
     print()

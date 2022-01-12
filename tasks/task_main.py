@@ -77,3 +77,36 @@ def task_main(template_disease_file_path, excel_check_file_path, present_file_pa
     manual_check.contrast_segments(e2m)
     # 数据入库
     e2m.excel2mysql()
+
+
+def get_doccano_datas(extract_template_files, template_path, output_text):
+    """
+    获取doccano的数据集
+    :return:
+    """
+
+    def get_lines():
+        g = os.walk(template_path)
+
+        lines = []
+        for path, _, file_list in g:
+            for ind, file in enumerate(file_list):
+                # file = '门诊病历(初诊)-咯血(4100200)门诊病历(初诊)8b933a9b-f0ed-459f-8974-ce2e07d44568.html'
+                extract = RJExtract(path, file, extract_template_files)
+                if extract.is_continue():
+                    print('文件不满足要求，不处理<{}>：{}'.format(ind, file))
+                    continue
+
+                print('开始处理<{}>：{}'.format(ind, extract.file_path))
+                file_result = extract.paragraphs()
+                for i in file_result:
+                    if not i[1]:
+                        continue
+                    l = '{}：{}'.format(i[0], i[1])
+                    if l not in lines:
+                        yield l
+                        lines.append(l)
+
+    with open(output_text, 'w') as f:
+        for line in get_lines():
+            f.write(line + '\n')
