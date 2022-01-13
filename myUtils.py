@@ -4,6 +4,7 @@
 # @File    : myUtils.py
 # @Software: Basebit
 # @Description:
+import json
 import re
 import pandas
 
@@ -87,7 +88,7 @@ def get_check_file_datas(excel_check_file_path):
     # 先根据new_label修改template_content
     for num, line in enumerate(datas.itertuples()):
         file_name = line._1
-        if type(file_name) is int:
+        if 'html' not in file_name:
             continue
         segment_content = line._4
         category_text = line._7
@@ -110,6 +111,12 @@ def get_check_file_datas(excel_check_file_path):
             datas.loc[(datas[0] == file_name) & (datas[6] == category_text), 1] = new_template_content
         if not (num == 0 or pandas.isna(new_segment_content)):
             datas.loc[num][3] = new_segment_content
+
+        # 最后检查，如果label与content的key不同，则告警
+        label, content = datas.loc[num, [2, 3]]
+        if not pandas.isna(content) and label != json.loads(content)['label']:
+            print('需要检查label与content的key是否对应')
+            raise ValueError(datas.loc[num])
 
     return datas
 

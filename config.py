@@ -152,6 +152,22 @@ JIEBA_USER_DICTS = [
     ['尿道下裂', DEFAULT_FREQUENCY, 'n'],
     ['外生殖器畸形', DEFAULT_FREQUENCY, 'n'],
     ['苍灰', DEFAULT_FREQUENCY, 'n'],
+    ['乳肿物', DEFAULT_FREQUENCY, 'n'],
+    ['孔溢液', DEFAULT_FREQUENCY, 'n'],
+    ['乳汁样', DEFAULT_FREQUENCY, 'n'],
+    ['黑色', DEFAULT_FREQUENCY, 'n'],
+    ['会诊单', DEFAULT_FREQUENCY, 'n'],
+    ['父母/同胞', DEFAULT_FREQUENCY, 'n'],
+    ['肾上腺CT/MRI', DEFAULT_FREQUENCY, 'n'],
+    ['多食', DEFAULT_FREQUENCY, 'n'],
+    ['压框', DEFAULT_FREQUENCY, 'n'],
+    ['他汀', DEFAULT_FREQUENCY, 'n'],
+    ['贝特', DEFAULT_FREQUENCY, 'n'],
+    ['mg/mmol', DEFAULT_FREQUENCY, 'n'],
+    ['父母或同胞', DEFAULT_FREQUENCY, 'n'],
+    ['CTA/MAR', DEFAULT_FREQUENCY, 'n'],
+    ['双睑浮肿', DEFAULT_FREQUENCY, 'n'],
+    ['双下肢浮肿', DEFAULT_FREQUENCY, 'n'],
 
     ['穿刺点及周围皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
     ['港体及导管处皮肤情况', DEFAULT_FREQUENCY * 10, 'n'],
@@ -199,6 +215,7 @@ JIEBA_USER_DICTS = [
     ['剖宫', DEFAULT_FREQUENCY * 10, 'n'],
     ['多饮', DEFAULT_FREQUENCY * 10, 'n'],
     ['多尿', DEFAULT_FREQUENCY * 10, 'n'],
+    ['局部无', DEFAULT_FREQUENCY * 10, 'n'],
 
     ['时间', DEFAULT_FREQUENCY // 10, 'text'],
     ['[0]', DEFAULT_FREQUENCY, 'text'],
@@ -215,6 +232,7 @@ JIEBA_USER_DICTS = [
     ['检查及结果', DEFAULT_FREQUENCY, 'text'],
     ['治疗方式', DEFAULT_FREQUENCY, 'text'],
     ['症状缓解程度', DEFAULT_FREQUENCY, 'text'],
+    ['位置', DEFAULT_FREQUENCY, 'text'],
 
     # 在这添加了option，需要在OPTION_MAP中添加对应的解析
     ['有无', DEFAULT_FREQUENCY, 'option'],
@@ -305,6 +323,8 @@ JIEBA_USER_DICTS = [
     ['溏烂', DEFAULT_FREQUENCY, 'option'],
     ['重浊', DEFAULT_FREQUENCY, 'option'],
     ['濡滑', DEFAULT_FREQUENCY, 'option'],
+    ['晚期浸润性', DEFAULT_FREQUENCY, 'option'],
+    ['浸润性', DEFAULT_FREQUENCY, 'option'],
 ]
 # 自定义词组存在的词
 JIEBA_USER_WORDS = [i[0] for i in JIEBA_USER_DICTS]
@@ -423,6 +443,10 @@ OPTION_MAP = {
     '濡滑': [['濡滑'], 0, cons.VALUE_TYPE_RADIO],
     '伴': [['不伴', '伴'], 0, cons.VALUE_TYPE_RADIO],
     '不伴': [['不伴', '伴'], 0, cons.VALUE_TYPE_RADIO],
+    '晚期浸润性': [['早期浸润性', '晚期浸润性'], 0, cons.VALUE_TYPE_RADIO],
+    '浸润性': [['浸润性'], 1, cons.VALUE_TYPE_RADIO],
+    '单': [['单', '双', '多'], 0, cons.VALUE_TYPE_RADIO],
+    'R': [['R及M', 'R', 'M'], 0, cons.VALUE_TYPE_RADIO],
 }
 
 # 全为阳性的选项
@@ -626,6 +650,10 @@ PRE_TREATMENT_CFG = [
         'repl': '',
     },
     {
+        'pat': '有/无吸烟史。吸烟\[0\]年，\[0\]支/天。有/无饮酒史。饮酒\[0\]年，\[0\]两/天。',
+        'repl': '有无烟、酒等不良嗜好',
+    },
+    {
         'pat': '吸烟.*饮酒',
         'repl': '烟酒',
     },
@@ -754,7 +782,7 @@ PRE_TREATMENT_CFG = [
     },
     {
         # 直径约 mm --> 空格替换
-        'pat': '([\d|/| ]+)(?=mm)',
+        'pat': '([\d|/| ]+)(?=mm[^a-z])',
         'repl': '输入'
     },
     {
@@ -973,7 +1001,8 @@ PRE_TREATMENT_CFG = [
         'pat': '(，情况|发病时间，慢性疾病史类型|具体因何疾病作何手术，手术日期及手术结果|，外伤日期、部位、程度、诊疗结果'
                '|发病时间，传染性疾病史类型|，具体情况|，呕吐物情况|，腹泻情况|，性质|，腹痛情况|，具体分布情况|：具体'
                '|，疼痛部位及性质|，咳嗽性质|，呕吐次数、程度，呕吐物性状|，部位，腹痛性质、程度|，其他症状|，头痛情况'
-               '|，时间和时间|，发作的频率和周期，持续时间|，感染症状|，具体好转情况|，症状表现|，水肿部位|，分布于部位)(?![\u4e00-\u9fa5])',
+               '|，时间和时间|，发作的频率和周期，持续时间|，感染症状|，具体好转情况|，症状表现|，水肿部位|，分布于部位'
+               '|。疾病名称，疾病时间)(?![\u4e00-\u9fa5])',
         'repl': ''
     },
     {
@@ -1077,6 +1106,67 @@ PRE_TREATMENT_CFG = [
         'pat': 'G输入/P输入',
         'repl': 'G输入，P输入'
     },
+    {
+        'pat': '拟行.+?治疗',
+        'repl': '拟行输入治疗'
+    },
+    {
+        'pat': '予以.*化疗（',
+        'repl': '予以输入（'
+    },
+    {
+        'pat': '（）',
+        'repl': '输入'
+    },
+    {
+        'pat': '吸烟嗜好有/无：\[0\]支/天\[0\]年',
+        'repl': '有无烟、酒等不良嗜好'
+    },
+    {
+        'pat': '\d级亲友',
+        'repl': '输入级亲友'
+    },
+    {
+        'pat': '单/多孔溢液',
+        'repl': '单孔溢液'
+    },
+    {
+        'pat': 'R及M',
+        'repl': 'R/M'
+    },
+    {
+        'pat': 'kg/身高',
+        'repl': 'kg，身高'
+    },
+    {
+        # 尿常规：尿蛋白（－）/（[0]+）；RBC（－）/（[0]+）;WBC（－）/（[0]+）; 尿糖：（－）/[0]+
+        'pat': '(尿蛋白|RBC|WBC|尿糖)([：\－）/（\[0\]\+）]+)[;；]',
+        'repl': r'\1（-）；'
+    },
+    {
+        'pat': '血脂（mmol/L）：',
+        'repl': '血脂输入mmol/L，'
+    },
+    {
+        'pat': '肢体活动不灵，言语不清',
+        'repl': '肢体活动不灵、言语不清'
+    },
+    {
+        'pat': '(胸闷、胸痛、活动后气促|头痛、恶心、呕吐、肢体活动不灵、言语不清)$',
+        'repl': r'\1等'
+    },
+    {
+        'pat': '有/无',
+        'repl': '有无'
+    },
+    {
+        'pat': '肾动脉CTA/MAR结论：；',
+        'repl': '肾动脉CTA/MAR结论：输入；'
+    },
+    {
+        'pat': '经MDT讨论拟行输入治疗+化疗',
+        'repl': '经MDT讨论拟行输入'
+    },
 
 ]
 
@@ -1119,7 +1209,6 @@ DISPLAY_SENTENCE_TEXTS = [
     '四诊摘要：',
     '今去封，扩根至40#，测根长，氯双及NS冲洗，吸干，',
     '2、 维护情况：',
-    '压框等疼痛刺激反应',
     '如有明显不适及时来院就诊',
     '减量或停药',
     '未发现明显异常',
@@ -1144,7 +1233,12 @@ DISPLAY_SENTENCE_TEXTS = [
     '表现为：',
     '发作前',
     '自发病以来',
+    '发病以来',
     '如有乏力、恶心、呕吐、腹泻或体重降低或反复感染、急发虚脱、突发腹痛、腰背痛等及时就诊',
+    '常规随访，来院复诊',
+    '改善生活方式：低盐（每日小于5g）、低脂、戒烟、限酒、缓解精神压力、控制体重',
+    '根据术后病理',
+    '本次来院复查',
 ]
 
 # 当遇到以下内容，需要临时调整jieba自定义词组
@@ -1158,6 +1252,8 @@ SPECIAL_WORDS = [
     ['单侧/双侧', ['单侧', 'n']],
     ['出现症状', ['症状', 'text']],
     ['伴部位肿块', ['部位', 'text']],
+    ['单孔溢液', ['单', 'option']],
+    ['恶心、呕吐、肢体活动不灵、言语不清等', ['言语不清', 'n']],
 ]
 
 # 无穷枚举中可能出现的前缀词，将相关的词放在display中

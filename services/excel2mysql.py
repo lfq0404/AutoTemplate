@@ -41,7 +41,6 @@ INSERT_LOGS = []
 
 
 class Excel2Mysql:
-    # TODO：优化入库代码，批量提交
     # 思路1：在本地跑一遍，把SQL拉出来
     def __init__(self, template_disease_file_path, excel_check_file_path, present_file_path, extract_template_files):
         self.template_disease_file_path = template_disease_file_path
@@ -102,7 +101,8 @@ class Excel2Mysql:
                                 'symptom_flag': 0,
                                 'source_id': 2,
                                 'status': 1,
-                            })
+                            },
+                            sign=2)
                         disease_id = self.exec_insert_sql(sql)
                         disease_ids.append(disease_id)
                         icd_codes.append('CODE.{}'.format(pinyin_abbr))
@@ -201,7 +201,7 @@ class Excel2Mysql:
         """
         return value if isinstance(value, (datetime.datetime, float, int, datetime.date)) else escape_string(value)
 
-    def get_insert_sql(self, table_name, infos: dict, sign=1):
+    def get_insert_sql(self, table_name, infos: dict, sign=0):
         """
         拼接insert的sql语句
         :param table_name:
@@ -246,7 +246,7 @@ class Excel2Mysql:
             :param data:
             :return:
             """
-            sql = self.get_insert_sql(table, data, sign=1)
+            sql = self.get_insert_sql(table, data, sign=2)
             segment_id = self.exec_insert_sql(sql)
 
             return segment_id
@@ -290,6 +290,8 @@ class Excel2Mysql:
             custom_infos = []
 
             for category_text, template in package_info.items():
+                if not category_text:
+                    raise ValueError()
                 template_category = cons.KNOWN_CATEGORY_MAP.get(category_text) or 'CUSTOM'
                 if self.present_file_path and template_category == 'PRESENT':
                     # 老版本的现病史不需要创建segment
@@ -396,7 +398,7 @@ class Excel2Mysql:
                     'status': 1,
                     'type': _type
                 },
-                sign=0)
+                sign=2)
             self.exec_insert_sql(sql)
 
         def insert_virtual_department_package(data):
@@ -405,7 +407,7 @@ class Excel2Mysql:
             :param data:
             :return:
             """
-            sql = self.get_insert_sql('virtual_department_package_v2', data, sign=0)
+            sql = self.get_insert_sql('virtual_department_package_v2', data, sign=2)
             self.exec_insert_sql(sql)
 
         num = 0
@@ -474,29 +476,35 @@ class Excel2Mysql:
                         'org_code': rj_organization_code,
                         'code': department_code,
                         'name': depart_name
-                    })
+                    },
+                    sign=2)
                 department_id = self.exec_insert_sql(sql)
             else:
                 department_id = cur.fetchall()[0][0]
 
             # 完善virtual_department配置
-            sql = 'select id from {} where name="{}"'.format('virtual_department', virtual_name)
+            sql = 'select virtual_department_id from {} where department_id="{}"'.format(
+                'department_mapping', department_id)
             item = cur.execute(sql)
             if not item:
-                sql = self.get_insert_sql('virtual_department', {
-                    'name': virtual_name,
-                    'description': virtual_name,
-                    'source_id': source_id,
-                    'auto_update': 1,
-                    'disabled': 0
-                })
+                sql = self.get_insert_sql(
+                    'virtual_department',
+                    {
+                        'name': virtual_name,
+                        'description': virtual_name,
+                        'source_id': source_id,
+                        'auto_update': 1,
+                        'disabled': 0
+                    },
+                    sign=2)
                 virtual_department_id = self.exec_insert_sql(sql)
                 sql = self.get_insert_sql(
                     'department_mapping',
                     {
                         'virtual_department_id': virtual_department_id,
                         'department_id': department_id
-                    })
+                    },
+                    sign=2)
                 mapping_id = self.exec_insert_sql(sql)
             else:
                 rows = cur.fetchall()
@@ -597,9 +605,12 @@ class Excel2MysqlAppointID(Excel2Mysql):
     为了避免测试的时候不断的入库删库，自增id增长太快
     """
 
-    def __init__(self, template_disease_file_path, excel_check_file_path, present_file_path, extract_template_files):
+    def __init__(self, template_disease_file_path, excel_check_file_path, present_file_path, extract_template_files,
+                 autocommit):
         super(Excel2MysqlAppointID, self).__init__(template_disease_file_path, excel_check_file_path, present_file_path,
                                                    extract_template_files)
+        self.autocommit = autocommit
+
         # 初始化每张表的最大id
         for table in ['custom_segment_v2',
                       'department_mapping',
@@ -619,7 +630,11 @@ class Excel2MysqlAppointID(Excel2Mysql):
             id_ = cur.fetchone()[0] or 0
             setattr(self, table, id_)
 
-    def get_insert_sql(self, table_name, infos: dict, sign=1):
+        # 已经存在的入库信息，防止autocommit=False的时候重复入库
+        self.exists_infos = []
+        self.exists_ids = []
+
+    def get_insert_sql(self, table_name, infos: dict, sign=0):
         """
         拼接insert的sql语句
         指定id
@@ -628,6 +643,25 @@ class Excel2MysqlAppointID(Excel2Mysql):
         :param sign: 0直接插入数据，不忽略报错；1利用新数据更新老数据；2如果存在相同数据，则以老数据为准
         :return:
         """
+        sign = int(sign)
+        valid_infos = {i[0]: i[1] for i in infos.items() if i != 'id'}
+        # 避免重复入库
+        if sign == 2:
+            if valid_infos in self.exists_infos:
+                _id = self.exists_ids[self.exists_infos.index(valid_infos)]
+                return _id
+            where_ = ''
+            for key, value in valid_infos.items():
+                if value is not None:
+                    where_ += "{} = '{}' and ".format(key, self.format_sql(value))
+            sql = "SELECT id FROM {} WHERE {} ;".format(table_name, where_[:-5])
+            cur.execute(sql)
+            _id = cur.fetchone()
+            if _id:
+                self.exists_infos.append(valid_infos)
+                self.exists_ids.append(_id[0])
+                return _id[0]
+
         if infos.get('id') is None:
             table_name = table_name.lower()
             # getattr出来的id是当前的最大id
@@ -635,7 +669,11 @@ class Excel2MysqlAppointID(Excel2Mysql):
             setattr(self, table_name, now_id)
             infos['id'] = now_id
 
-        sign = int(sign)
+        # 保存已入库的信息
+        if sign == 2:
+            self.exists_infos.append(valid_infos)
+            self.exists_ids.append(infos['id'])
+
         col_str = ''
         row_str = ''
         for key in infos.keys():
@@ -657,3 +695,33 @@ class Excel2MysqlAppointID(Excel2Mysql):
         else:
             pass
         return sql
+
+    def exec_insert_sql(self, sql):
+        """
+        执行insert，并返回id
+        允许最后批量执行
+        :param sql:
+        :return:
+        """
+        # 如果不是insert语句，则表示sql为id
+        if 'INSERT' not in str(sql):
+            return sql
+
+        table_name = re.findall('into (.*?) ', sql, re.I)[0]
+
+        if self.autocommit:
+            cur.execute(sql)
+            _id = connection.insert_id()
+            if _id:
+                print('{}-新id为：{}'.format(table_name, _id))
+            else:
+                print('{}-未更新，SQL为：{}'.format(table_name, sql))
+            connection.commit()
+        else:
+            # 进入这里，都是通过get_insert_sql拼接的SQL
+            _id = [re.findall("^'(\d+)'$", i)[-1] for i in re.split('[,\)]', sql) if re.findall("^'\d+'$", i)][-1]
+
+        INSERT_LOGS.append(sql)
+        DELETE_LOGS.append('delete from {} where id = {}'.format(table_name, _id))
+
+        return _id

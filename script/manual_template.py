@@ -72,7 +72,7 @@ def orange2green(radio):
 
 if __name__ == '__main__':
     radio = """
-    {"label": "前囟", "type": "RADIO", "value": ["1"], "options": [{"label": "平坦", "display": "前囟平坦", "props": {"color": "orange"}, "value": "1", "addition": null}, {"label": "隆起", "display": "前囟隆起", "props": {"color": "orange"}, "value": "2", "addition": null}, {"label": "凹陷", "display": "前囟凹陷", "props": {"color": "orange"}, "value": "3", "addition": null}]}
+    {"label": "肢远端皮温", "type": "RADIO", "value": ["1"], "options": [{"label": "温暖", "display": "肢远端皮温温暖", "props": {"color": "orange"}, "value": "1", "addition": null}, {"label": "冰凉", "display": "肢远端皮温冰凉", "props": {"color": "orange"}, "value": "2", "addition": null}]}
     """
     orange2green(radio)
     # radio_add_text(

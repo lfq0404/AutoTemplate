@@ -128,6 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 delete_log*.sql
+insert_log*.sql
 病历书写规范.pdf
 *.ipynb
 ~$*.xlsx

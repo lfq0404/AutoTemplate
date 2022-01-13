@@ -529,7 +529,7 @@ def format_sql(value):
     return value if isinstance(value, (datetime.datetime, float, int, datetime.date)) else escape_string(value)
 
 
-def get_insert_sql(table_name, infos: dict, sign=1):
+def get_insert_sql(table_name, infos: dict, sign=0):
     """
     拼接insert的sql语句
     :param table_name:
@@ -586,7 +586,7 @@ def test():
         'category': 'CUSTOM',
         'content': text,
         'created_at': datetime.datetime.now()
-    }, sign=0)
+    })
     # exec_insert_sql(sql)
     sql = 'select content from template where id = 123;'
     cur.execute(sql)

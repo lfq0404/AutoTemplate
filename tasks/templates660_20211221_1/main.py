@@ -11,7 +11,7 @@ from services.excel2mysql import Excel2MysqlAppointID
 from services.extract_core import RJExtract
 from services.manual_check_service import ManualCheck
 from services.pandas2excel import record2excel
-import tasks.templates660_1221.task_constant as cons
+import tasks.templates660_20211221_1.task_constant as cons
 
 
 def code_extract(batch):
@@ -49,6 +49,7 @@ def main(batch):
         cons.EXCEL_RESULT_FOR_CHECK_PATH,
         cons.PRESENT_FILE_PATH,
         cons.TEMPLATE_BATCHES[batch],
+        autocommit=False,
     )
     manual_check = ManualCheck(
         cons.EXCEL_RESULT_FOR_CHECK_PATH,

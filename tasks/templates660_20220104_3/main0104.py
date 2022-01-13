@@ -6,7 +6,7 @@
 # @Description:
 from services.manual_check_service import ManualCheck
 from tasks.task_main import task_main
-import tasks.templates660_0111.task_constant as cons
+import tasks.templates660_20220104_3.task_constant as cons
 
 
 def only_check():
@@ -20,13 +20,14 @@ def only_check():
 
 
 if __name__ == '__main__':
-    # task_main(
-    #     template_disease_file_path=cons.TEMPLATE_DISEASE_FILE_PATH,
-    #     excel_check_file_path=cons.EXCEL_RESULT_FOR_CHECK_PATH,
-    #     present_file_path=cons.PRESENT_FILE_PATH,
-    #     extract_template_files=cons.EXTRACT_TEMPLATE_FILES,
-    #     standard_file_path=cons.EXCEL_STANDARD_FILE_PATH,
-    #     template_path=cons.TEMPLATE_PATH,
-    # )
+    task_main(
+        template_disease_file_path=cons.TEMPLATE_DISEASE_FILE_PATH,
+        excel_check_file_path=cons.EXCEL_RESULT_FOR_CHECK_PATH,
+        present_file_path=cons.PRESENT_FILE_PATH,
+        extract_template_files=cons.EXTRACT_TEMPLATE_FILES,
+        standard_file_path=cons.EXCEL_STANDARD_FILE_PATH,
+        template_path=cons.TEMPLATE_PATH,
+        autocommit=False
+    )
 
-    only_check()
+    # only_check()

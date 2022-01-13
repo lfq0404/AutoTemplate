@@ -38,7 +38,7 @@ def _code_extract(extract_template_files, template_path):
 
 
 def task_main(template_disease_file_path, excel_check_file_path, present_file_path, extract_template_files,
-              standard_file_path, template_path):
+              standard_file_path, template_path, autocommit):
     """
     1、通过代码解析模板信息
     2、人工校验模板信息
@@ -50,6 +50,7 @@ def task_main(template_disease_file_path, excel_check_file_path, present_file_pa
         excel_check_file_path,
         present_file_path,
         extract_template_files,
+        autocommit=autocommit
     )
     manual_check = ManualCheck(
         excel_check_file_path,
@@ -77,6 +78,9 @@ def task_main(template_disease_file_path, excel_check_file_path, present_file_pa
     manual_check.contrast_segments(e2m)
     # 数据入库
     e2m.excel2mysql()
+
+    if autocommit:
+        raise ValueError('需要手动执行新生成的insert_log文件！！！')
 
 
 def get_doccano_datas(extract_template_files, template_path, output_text):
