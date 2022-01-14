@@ -1,0 +1,181 @@
+<!DOCTYPE html><html xmlns=http://www.w3.org/1999/xhtml>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <title>父页面</title>
+  <script src="jquery-1.8.3.min.js"></script>
+</head>
+<body>
+  <!-- 父域的运行环境 -->
+  <div>
+    <button onclick="getData()">1、发送PostMessage数据到iframe</button>
+    <div>接受从iframe传回的内容：<span id="childMsg"></span></div>
+    <br>
+    <button id="submitEMR">2、患者就诊结束后推送医生最后确认保存的患者病历和诊断信息</button>
+  </div>
+  Iframe: (type=iframe: 网页请求形式；orgCode: 医院id；deptCode：科室id；patientId：患者id； visitId: 就诊id)
+  <!-- <iframe
+    src="http://172.18.0.76:8116/?type=iframe&visitId=707010491&orgCode=00000002&patientId=1646184620231"
+    id="iframepage"
+    width="896px"
+    height="1200px"
+    frameborder="0"
+    scrolling="yes"
+  ></iframe> -->
+  <iframe
+    src="http://172.18.0.76:8116/?type=iframe&visitId=707010491&orgCode=00000002&patientId=1646184620231"
+    id="iframepage"
+    width="896px"
+    height="1200px"
+    frameborder="0"
+    scrolling="yes"
+  ></iframe>
+</body>
+
+<script>
+  // 接收iframe传来的Message
+  window.onmessage = function (e) {
+    e = e || event;
+    if (e.data) {
+      document.getElementById("childMsg").innerText = e.data;
+    }
+  };
+
+  function getData() {
+    var iframe = document.getElementById("iframepage");
+    var win = iframe.contentWindow;
+    // 向iframe传递数据
+    win.postMessage(
+      JSON.stringify({
+        method: "Data",
+        data: {
+          emergency: 0,
+          tplType: "INITIAL", // 模板类型 - 初诊：INITIAL, 复诊：SUBSEQUENT, 配药：MEDICINE
+          callOperator: "孙XX,123456",
+          orgCode: "00000002",
+          deptCode: "4100200",
+          orgPatientId: "1646184620231",
+          orgVisitId: "707010491",
+          visitStartAt: "2018-12-16 01:17:45",
+          patientInfo: {
+            birthday: "2016-04-12 12:12:12",
+            gender: "M",
+          },
+          physicalSign: {
+            height: {
+              value: "117",
+              unit: "cm",
+            },
+            weight: {
+              value: "21",
+              unit: "kg",
+            },
+            temperature: {
+              value: "37.0",
+              unit: "°C",
+            },
+            pulse: {
+              value: "90",
+              unit: "次/分",
+            },
+            respiration: {
+              value: "30",
+              unit: "次/分",
+            },
+            DBP: {
+              value: "80",
+              unit: "mmHg",
+            },
+            SBP: {
+              value: "120",
+              unit: "mmHg",
+            },
+          },
+          diagnosis: [
+            {
+                "name": "肢体麻木",
+                "code": "R20.803",
+                "id": "90413"
+            }
+          ]
+        },
+      }),
+      "*"
+    );
+  }
+
+  $("#submitEMR").click(function(){
+    var data = {
+      emergency: 0,
+      tplType: "INITIAL", // 模板类型 - 初诊：INITIAL, 复诊：SUBSEQUENT, 配药：MEDICINE
+      callOperator: "孙XX,123456",
+      orgCode: "00000002",
+      deptCode: "4100200",
+      orgPatientId: "1646184620231",
+      orgVisitId: "707010491",
+      visitStartAt: "2018-12-16 01:17:45",
+      patientInfo: {
+        birthday: "2016-04-12 12:12:12",
+        gender: "M",
+      },
+      physicalSign: {
+        height: {
+          value: "117",
+          unit: "cm",
+        },
+        weight: {
+          value: "21",
+          unit: "kg",
+        },
+        temperature: {
+          value: "37.0",
+          unit: "°C",
+        },
+        pulse: {
+          value: "90",
+          unit: "次/分",
+        },
+        respiration: {
+          value: "30",
+          unit: "次/分",
+        },
+        DBP: {
+          value: "80",
+          unit: "mmHg",
+        },
+        SBP: {
+          value: "120",
+          unit: "mmHg",
+        },
+      },
+      emr: {
+        diagnosis: [
+        {
+            "name": "肢体麻木",
+            "code": "R20.803"
+        }
+        ],
+        complaint: "主诉",
+        present: "现病史",
+        past: "过往史",
+        personal: "",
+        allergy: "过敏史",
+        family: "家族史",
+        marriageBirth: "婚育史",
+        menstruation: "月经史",
+        physical: "查体",
+        custom: "其他/处理"
+      }
+    }
+    
+    $.ajax({
+      type: 'POST',
+      url: "http://172.18.0.76:8111/api/v1/template/his/emrs",
+      data: JSON.stringify(data),
+      contentType:'application/json; charset=utf-8',
+      success: function(result){
+        console.log(result);
+      }
+    });
+    
+  });
+</script>
